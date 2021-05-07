@@ -1,0 +1,6 @@
+{
+	"name": "IntegrationRuntimeSynapse",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

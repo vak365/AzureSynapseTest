@@ -1,0 +1,13 @@
+{
+	"name": "FactClaimDetails",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServerSynapse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

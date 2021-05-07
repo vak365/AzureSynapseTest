@@ -1,0 +1,17 @@
+{
+	"name": "Insert claimsummary",
+	"properties": {
+		"content": {
+			"query": "\nINSERT INTO dbo.ClaimsSummary\n(\n\t[ClaimFIRNo]\n,\t[ClaimType]\n,\t[HospitalizationType]\n,\t[ClassofAccommodation]\n,\t[Procedure]\n,\t[Diagnosis]\n,\t[PolicyNo]\n,\t[PolicyType]\n,\t[member_code]\n,\t[FullMemberName]\n,\t[Gender]\n,\t[Age]\n,\t[Hospital]\n,\t[Corporate]\n,\t[LengthofStay]\n,\t[IsFraudClaim]\n,\t[FraudScore]\n,\t[ClaimAmount]\n,\t[ClaimDate]\n)\nSELECT \n\tC.ClaimFormDetailId AS 'Claim FIR No'\n,   CASE \n\t\tWHEN C.ClaimType = 0 THEN 'Cashless'\n\tELSE 'Reimbursement' END AS 'Claim Type'\n,\tC.ClaimCategory AS 'Hospitalization Type'\n,\tC.ClassofAccommodation\n,\tCPT.CptDescription AS 'Procedure'\n,\tIcd.IcdDescription AS 'Diagnosis'\n,\tMDT.policyNo\n,\tCASE WHEN MDt.employer_id = 0 THEN 'Individual Policy' ELSE 'Group Policy' END AS 'Policy Type'\n,\tM.member_code\n,\tM.FullMemberName\n,\tCASE WHEN M.sex = 'F' THEN 'Female' ELSE 'Male' END AS 'Gender'\n,\tDATEDIFF(YEAR,M.date_birth, GETDATE()) AS 'Age'\n,\tP.HospitalName AS 'Hospital'\n--,\tPN.ProviderNetworkType_Desc AS 'Provider Network Type'\n,   Emp.EmployerName AS 'Corporate'\n,\tDATEDIFF(DAY,C.DateofAdmit, C.DateofDischarge) AS 'Length of Stay'\n,\tCASE WHEN A.ClaimFormDetailId IS NULL THEN 0 ELSE 1 END AS 'IsFraudClaim'\n,\tA.FraudScore AS 'Fraud Score'\n,\tC.AmountNet AS 'Claim Amount'\n,\tC.DateofAdmit AS 'Claim Date'\n\nFROM FactClaimDetails C \nINNER JOIN LnkClaimProcedureDetails L ON L.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimProcedureCodes Cpt ON Cpt.CptCodeId = L.CptCodeId\nINNER JOIN LnkClaimDiagnosisCodes Licd ON Licd.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimDiagnosisCodes Icd ON Icd.IcdCodeId = Licd.IcdCodeId \nINNER JOIN DimMemberDetails MDT ON MDt.member_detail_id = C.MemberDetailId\nINNER JOIN DimMembers M ON M.member_id = MDT.member_id\nINNER JOIN DimHospitalDetails P ON P.HospitalId = C.HospitalId\n--INNER JOIN  Provider_NetworkType PN ON PN.ProviderNetworkType_Id = P.Provider_NetworkType\nLEFT OUTER JOIN DimEmployers EMP ON Emp.EmployerId = MDT.employer_id\nLEFT OUTER JOIN\n(\n\tSELECT F.ClaimFormDetailId, SUM(L.FraudScore) AS FraudScore\n\tFROM FactClaimDetails F \n\tINNER JOIN LnkClaimFraudParameter L ON L.ClaimFormDetailId = F.ClaimFormDetailId\n\tGROUP BY\n\t\tF.ClaimFormDetailId\n) A ON A.ClaimFormDetailId = C.ClaimFormDetailId",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "SqlPoolTableSynapse",
+				"databaseName": "SqlPoolTableSynapse"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

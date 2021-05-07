@@ -1,0 +1,31 @@
+{
+	"name": "DimDiagnosisCodesPool",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "IcdCodeId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IcdCode",
+				"type": "varchar"
+			},
+			{
+				"name": "IcdDescription",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DimDiagnosisCodes"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

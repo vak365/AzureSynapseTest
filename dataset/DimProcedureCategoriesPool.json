@@ -1,0 +1,31 @@
+{
+	"name": "DimProcedureCategoriesPool",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "ProcedureCategoryId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProcedureCategoryCode",
+				"type": "varchar"
+			},
+			{
+				"name": "ProcedureCategoryDesc",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DimProcedureCategories"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

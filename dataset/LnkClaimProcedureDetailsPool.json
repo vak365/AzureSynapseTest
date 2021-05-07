@@ -1,0 +1,98 @@
+{
+	"name": "LnkClaimProcedureDetailsPool",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "ClaimProcedureId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ClaimFormDetailId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CptCodeId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Billed",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "Net",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "NoofServices",
+				"type": "decimal",
+				"precision": 19,
+				"scale": 2
+			},
+			{
+				"name": "PlaceofServiceId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Amount",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "ParentServiceProcedureId",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "GrossAmount",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "ServiceStartDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ServiceEndDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "BilledGross",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "ServiceNet",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "LnkClaimProcedureDetails"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

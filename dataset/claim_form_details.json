@@ -1,0 +1,17 @@
+{
+	"name": "claim_form_details",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "claim_form_details"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

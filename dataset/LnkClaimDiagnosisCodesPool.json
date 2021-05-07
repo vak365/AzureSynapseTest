@@ -1,0 +1,33 @@
+{
+	"name": "LnkClaimDiagnosisCodesPool",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "ClaimDiagnosisId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ClaimFormDetailId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IcdCodeId",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "LnkClaimDiagnosisCodes"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}
