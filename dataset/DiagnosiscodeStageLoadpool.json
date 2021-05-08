@@ -1,0 +1,30 @@
+{
+	"name": "DiagnosiscodeStageLoadpool",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "IcdCodeId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IcdCode",
+				"type": "varchar"
+			},
+			{
+				"name": "IcdDescription",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Load",
+			"table": "DiagnosisCodes"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	}
+}

@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "DimDiagnosisCodes",
+				"name": "DiagnosisCodesStage",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +18,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT \n\tICD.icd9_code_id\t\tAS IcdCodeId\n,\tICD.icd9_code\t\t\tAS IcdCode\n,\tICD.description\t\t\tAS IcdDescription\n\nFROM icd9_codes ICD\nWHERE\n\tICD.is_invalid = 0 AND\n\tICD.Type IN ('ICD10','ICD9')\n",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'DiagnosisCodes' \n\nSELECT \n\tICD.icd9_code_id\t\tAS IcdCodeId\n,\tICD.icd9_code\t\t\tAS IcdCode\n,\tICD.description\t\t\tAS IcdDescription\n\nFROM icd9_codes ICD\nWHERE\n\tICD.is_invalid = 0 AND\n\tICD.Type IN ('ICD10','ICD9') AND\n\tCAST(CONVERT(VARCHAR(10),ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -27,7 +27,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "DELETE FROM dbo.DIMDiagnosisCodes",
+							"value": "TRUNCATE TABLE load.DiagnosisCodes",
 							"type": "Expression"
 						}
 					},
@@ -81,13 +81,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DimDiagnosisCodes",
+						"referenceName": "DiagnosiscodeStageLoad",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "DimDiagnosisCodesPool",
+						"referenceName": "DiagnosiscodeStageLoadpool",
 						"type": "DatasetReference"
 					}
 				]
