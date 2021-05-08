@@ -1,9 +1,9 @@
 {
-	"name": "DimDiagnosisCodes",
+	"name": "Delta Load",
 	"properties": {
 		"activities": [
 			{
-				"name": "DiagnosisCodesStage",
+				"name": "DiagnosisCodesStageLoad",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -93,7 +93,7 @@
 				]
 			},
 			{
-				"name": "FactClaimDetails",
+				"name": "ClaimDetailsStageLoad",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -108,7 +108,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "\n\nSELECT top 100\n\t\n\tCFD.claim_form_detail_code\t\t\tAS 'ClaimFIRNo'\n,\tCFD.injury_Name\t\t\t\t\t\tAS 'Injury'\n,\tCFD.isCashless\t\t\t\t\t\tAS 'ClaimType'\n,\tCFD.Claim_type_Code\t\t\t\t\tAS 'ClaimCategory'\n,\tCFD.billed\t\t\t\t\t\t\tAS 'AmountBilled'\n,\tCFD.net\t\t\t\t\t\t\t\tAS 'AmountNet'\n,\tCFD.Amount_paid\t\t\t\t\t\tAS 'AmountPaid'\n,\tCFD.Dr_name\t\t\t\t\t\t\tAS 'DoctorName'\n,\tCFD.Dr_City\t\t\t\t\t\t\tAS 'DoctorCity'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\tCFD.claim_detail_id\t\t\t\t\tAS 'IntimationId'\n,\tCFD.hosp_id\t\t\t\t\t\t\tAS 'HospitalId'\n,\tCFD.claim_status_id\t\t\t\t\tAS 'ClaimStatusId'\n,\tCFD.place_of_service_id\t\t\t\tAs 'PlaceofServiceId' \n,\tCFD.date_service\t\t\t\t\tAS 'DateofService'\n,\tCFD.date_paid\t\t\t\t\t\tAS 'DatePaid'\n,\tCFD.date_received\t\t\t\t\tAS 'DateReceived'\n,\tCFD.date_of_Admit\t\t\t\t\tAS 'DateofAdmit'\n,\tCFD.injury_sustained_date\t\t\tAS 'DateofInjury' \n,\tCFD.document_dated\t\t\t\t\tAS 'DateofDocumentation'\n,\tCFD.date_of_Discharge\t\t\t\tAS 'DateofDischarge'\n,\tCFD.date_modified\t\t\t\t\tAS 'DateModified'\n,\tCFD.workflow_current_sequence_id\tAS 'WorkflowSequenceId'\n,\tCFD.member_detail_id\t\t\t\tAS 'MemberDetailId'\n,\tCFD.Class_of_Accommodation\t\t\tAS 'ClassofAccommodation'\n,\tCFD.Type_of_Hospitalization\t\t\tAS 'HospitalizationType'\n,\tE.name\t\t\t\t\t\t\t\tAS 'Corporate'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimId'\n\nFROM claim_form_details CFD\nINNER JOIN Member_details_tmp MDT ON MDT.member_detail_id = CFD.member_detail_id\nLEFT OUTER JOIN employers E ON E.employer_id = MDT.employer_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0 ",
+							"value": "DECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'ClaimDetails' \n\nSELECT\n\t\n\tCFD.claim_form_detail_code\t\t\tAS 'ClaimFIRNo'\n,\tCFD.injury_Name\t\t\t\t\t\tAS 'Injury'\n,\tCFD.isCashless\t\t\t\t\t\tAS 'ClaimType'\n,\tCFD.Claim_type_Code\t\t\t\t\tAS 'ClaimCategory'\n,\tCFD.billed\t\t\t\t\t\t\tAS 'AmountBilled'\n,\tCFD.net\t\t\t\t\t\t\t\tAS 'AmountNet'\n,\tCFD.Amount_paid\t\t\t\t\t\tAS 'AmountPaid'\n,\tCFD.Dr_name\t\t\t\t\t\t\tAS 'DoctorName'\n,\tCFD.Dr_City\t\t\t\t\t\t\tAS 'DoctorCity'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\tCFD.claim_detail_id\t\t\t\t\tAS 'IntimationId'\n,\tCFD.hosp_id\t\t\t\t\t\t\tAS 'HospitalId'\n,\tCFD.claim_status_id\t\t\t\t\tAS 'ClaimStatusId'\n,\tCFD.place_of_service_id\t\t\t\tAs 'PlaceofServiceId' \n,\tCFD.date_service\t\t\t\t\tAS 'DateofService'\n,\tCFD.date_paid\t\t\t\t\t\tAS 'DatePaid'\n,\tCFD.date_received\t\t\t\t\tAS 'DateReceived'\n,\tCFD.date_of_Admit\t\t\t\t\tAS 'DateofAdmit'\n,\tCFD.injury_sustained_date\t\t\tAS 'DateofInjury' \n,\tCFD.document_dated\t\t\t\t\tAS 'DateofDocumentation'\n,\tCFD.date_of_Discharge\t\t\t\tAS 'DateofDischarge'\n,\tCFD.date_modified\t\t\t\t\tAS 'DateModified'\n,\tCFD.workflow_current_sequence_id\tAS 'WorkflowSequenceId'\n,\tCFD.member_detail_id\t\t\t\tAS 'MemberDetailId'\n,\tCFD.Class_of_Accommodation\t\t\tAS 'ClassofAccommodation'\n,\tCFD.Type_of_Hospitalization\t\t\tAS 'HospitalizationType'\n,\tE.name\t\t\t\t\t\t\t\tAS 'Corporate'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimId'\n\nFROM claim_form_details CFD\nINNER JOIN Member_details_tmp MDT ON MDT.member_detail_id = CFD.member_detail_id\nLEFT OUTER JOIN employers E ON E.employer_id = MDT.employer_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0 AND\n\tCAST(CONVERT(VARCHAR(10),cfd.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -117,7 +117,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "DELETE FROM dbo.FactClaimDetails",
+							"value": "truncate table load.ClaimDetails",
 							"type": "Expression"
 						}
 					},
@@ -483,13 +483,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "FactClaimDetails",
+						"referenceName": "ClimDetailsStage",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "FactClaimDetailspool",
+						"referenceName": "ClaimDetailsPoolStage",
 						"type": "DatasetReference"
 					}
 				]
@@ -2389,7 +2389,7 @@
 				"type": "SqlPoolStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "DiagnosisCodesStage",
+						"activity": "DiagnosisCodesStageLoad",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -2410,6 +2410,26 @@
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertDiagnosisCodes]"
 				}
+			},
+			{
+				"name": "SQL pool stored procedure1",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ClaimDetailsStageLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
 			}
 		],
 		"annotations": [],

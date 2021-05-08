@@ -1,5 +1,5 @@
 {
-	"name": "Incremental Load",
+	"name": "History Load",
 	"properties": {
 		"activities": [
 			{
