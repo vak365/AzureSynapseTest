@@ -2412,7 +2412,7 @@
 				}
 			},
 			{
-				"name": "SQL pool stored procedure1",
+				"name": "SQL pool stored procedure Claim Load",
 				"type": "SqlPoolStoredProcedure",
 				"dependsOn": [
 					{
@@ -2429,7 +2429,14 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[Load].[UpsertClaimDetails]"
+				}
 			}
 		],
 		"annotations": [],
