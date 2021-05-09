@@ -95,7 +95,14 @@
 			{
 				"name": "FactClaimDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimDiagnosisCodes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -108,7 +115,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "\n\nSELECT top 100\n\t\n\tCFD.claim_form_detail_code\t\t\tAS 'ClaimFIRNo'\n,\tCFD.injury_Name\t\t\t\t\t\tAS 'Injury'\n,\tCFD.isCashless\t\t\t\t\t\tAS 'ClaimType'\n,\tCFD.Claim_type_Code\t\t\t\t\tAS 'ClaimCategory'\n,\tCFD.billed\t\t\t\t\t\t\tAS 'AmountBilled'\n,\tCFD.net\t\t\t\t\t\t\t\tAS 'AmountNet'\n,\tCFD.Amount_paid\t\t\t\t\t\tAS 'AmountPaid'\n,\tCFD.Dr_name\t\t\t\t\t\t\tAS 'DoctorName'\n,\tCFD.Dr_City\t\t\t\t\t\t\tAS 'DoctorCity'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\tCFD.claim_detail_id\t\t\t\t\tAS 'IntimationId'\n,\tCFD.hosp_id\t\t\t\t\t\t\tAS 'HospitalId'\n,\tCFD.claim_status_id\t\t\t\t\tAS 'ClaimStatusId'\n,\tCFD.place_of_service_id\t\t\t\tAs 'PlaceofServiceId' \n,\tCFD.date_service\t\t\t\t\tAS 'DateofService'\n,\tCFD.date_paid\t\t\t\t\t\tAS 'DatePaid'\n,\tCFD.date_received\t\t\t\t\tAS 'DateReceived'\n,\tCFD.date_of_Admit\t\t\t\t\tAS 'DateofAdmit'\n,\tCFD.injury_sustained_date\t\t\tAS 'DateofInjury' \n,\tCFD.document_dated\t\t\t\t\tAS 'DateofDocumentation'\n,\tCFD.date_of_Discharge\t\t\t\tAS 'DateofDischarge'\n,\tCFD.date_modified\t\t\t\t\tAS 'DateModified'\n,\tCFD.workflow_current_sequence_id\tAS 'WorkflowSequenceId'\n,\tCFD.member_detail_id\t\t\t\tAS 'MemberDetailId'\n,\tCFD.Class_of_Accommodation\t\t\tAS 'ClassofAccommodation'\n,\tCFD.Type_of_Hospitalization\t\t\tAS 'HospitalizationType'\n,\tE.name\t\t\t\t\t\t\t\tAS 'Corporate'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimId'\n\nFROM claim_form_details CFD\nINNER JOIN Member_details_tmp MDT ON MDT.member_detail_id = CFD.member_detail_id\nLEFT OUTER JOIN employers E ON E.employer_id = MDT.employer_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0 ",
+							"value": "\n\nSELECT \n\t\n\tCFD.claim_form_detail_code\t\t\tAS 'ClaimFIRNo'\n,\tCFD.injury_Name\t\t\t\t\t\tAS 'Injury'\n,\tCFD.isCashless\t\t\t\t\t\tAS 'ClaimType'\n,\tCFD.Claim_type_Code\t\t\t\t\tAS 'ClaimCategory'\n,\tCFD.billed\t\t\t\t\t\t\tAS 'AmountBilled'\n,\tCFD.net\t\t\t\t\t\t\t\tAS 'AmountNet'\n,\tCFD.Amount_paid\t\t\t\t\t\tAS 'AmountPaid'\n,\tCFD.Dr_name\t\t\t\t\t\t\tAS 'DoctorName'\n,\tCFD.Dr_City\t\t\t\t\t\t\tAS 'DoctorCity'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\tCFD.claim_detail_id\t\t\t\t\tAS 'IntimationId'\n,\tCFD.hosp_id\t\t\t\t\t\t\tAS 'HospitalId'\n,\tCFD.claim_status_id\t\t\t\t\tAS 'ClaimStatusId'\n,\tCFD.place_of_service_id\t\t\t\tAs 'PlaceofServiceId' \n,\tCFD.date_service\t\t\t\t\tAS 'DateofService'\n,\tCFD.date_paid\t\t\t\t\t\tAS 'DatePaid'\n,\tCFD.date_received\t\t\t\t\tAS 'DateReceived'\n,\tCFD.date_of_Admit\t\t\t\t\tAS 'DateofAdmit'\n,\tCFD.injury_sustained_date\t\t\tAS 'DateofInjury' \n,\tCFD.document_dated\t\t\t\t\tAS 'DateofDocumentation'\n,\tCFD.date_of_Discharge\t\t\t\tAS 'DateofDischarge'\n,\tCFD.date_modified\t\t\t\t\tAS 'DateModified'\n,\tCFD.workflow_current_sequence_id\tAS 'WorkflowSequenceId'\n,\tCFD.member_detail_id\t\t\t\tAS 'MemberDetailId'\n,\tCFD.Class_of_Accommodation\t\t\tAS 'ClassofAccommodation'\n,\tCFD.Type_of_Hospitalization\t\t\tAS 'HospitalizationType'\n,\tE.name\t\t\t\t\t\t\t\tAS 'Corporate'\n,\tCFD.claim_form_detail_id\t\t\tAS 'ClaimId'\n\nFROM claim_form_details CFD\nINNER JOIN Member_details_tmp MDT ON MDT.member_detail_id = CFD.member_detail_id\nLEFT OUTER JOIN employers E ON E.employer_id = MDT.employer_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0 ",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -497,7 +504,14 @@
 			{
 				"name": "LnkClaimDiagnosisCodes",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "FactClaimDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -510,7 +524,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\tL.lcic_id\t\t\t\t\tAS 'ClaimDiagnosisId'\n,\tL.claim_form_detail_id\t\tAS 'ClaimFormDetailId'\n,\tL.icd9_code_id\t\t\t\tAS 'IcdCodeId'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_icd9_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0  ",
+							"value": "SELECT \n\tL.lcic_id\t\t\t\t\tAS 'ClaimDiagnosisId'\n,\tL.claim_form_detail_id\t\tAS 'ClaimFormDetailId'\n,\tL.icd9_code_id\t\t\t\tAS 'IcdCodeId'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_icd9_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0  ",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -587,7 +601,14 @@
 			{
 				"name": "LnkClaimProcedureDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LnkClaimDiagnosisCodes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -600,7 +621,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\t\tL.lccc_id\t\t\t\t\t\tAS 'ClaimProcedureId' \n,\t\tL.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\t\tL.cpt_code_id\t\t\t\t\tAS 'CptCodeId'\n,\t\tL.billed\t\t\t\t\t\tAS 'Billed'\n,\t\tL.net\t\t\t\t\t\t\tAS 'Net'\n,\t\tL.number_of_services\t\t\tAS 'NoofServices'\n,\t\tL.place_of_service_id\t\t\tAS 'PlaceofServiceId'\n,\t\tL.Amount\t\t\t\t\t\tAS 'Amount'\t\n,\t\tL.parent_service_procedure_id\tAS 'ParentServiceProcedureId'\n,\t\tL.GrossAmount\t\t\t\t\tAS 'GrossAmount'\n,\t\tL.Service_Start_Date\t\t\tAS 'ServiceStartDate'\n,\t\tL.Service_End_Date\t\t\t\tAS 'ServiceEndDate'\n,\t\tL.Billed_Gross\t\t\t\t\tAS 'BilledGross'\n,\t\tL.Service_Net\t\t\t\t\tAS 'ServiceNet'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_cpt_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0",
+							"value": "SELECT \n\t\tL.lccc_id\t\t\t\t\t\tAS 'ClaimProcedureId' \n,\t\tL.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\t\tL.cpt_code_id\t\t\t\t\tAS 'CptCodeId'\n,\t\tL.billed\t\t\t\t\t\tAS 'Billed'\n,\t\tL.net\t\t\t\t\t\t\tAS 'Net'\n,\t\tL.number_of_services\t\t\tAS 'NoofServices'\n,\t\tL.place_of_service_id\t\t\tAS 'PlaceofServiceId'\n,\t\tL.Amount\t\t\t\t\t\tAS 'Amount'\t\n,\t\tL.parent_service_procedure_id\tAS 'ParentServiceProcedureId'\n,\t\tL.GrossAmount\t\t\t\t\tAS 'GrossAmount'\n,\t\tL.Service_Start_Date\t\t\tAS 'ServiceStartDate'\n,\t\tL.Service_End_Date\t\t\t\tAS 'ServiceEndDate'\n,\t\tL.Billed_Gross\t\t\t\t\tAS 'BilledGross'\n,\t\tL.Service_Net\t\t\t\t\tAS 'ServiceNet'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_cpt_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -845,7 +866,14 @@
 			{
 				"name": "DimEmployers",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimMemberDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -858,7 +886,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\tEMP.employer_id\t\t\tAS 'EmployerId'\n,\tEMP.employer_code\t\tAS 'EmployerCode'\n,\tEMP.name\t\t\t\tAS 'EmployerName'\n,\tEmp.employer_detail_id\tAS 'EmployerDetailid'\n,\tEMP.city\t\t\t\tAS 'EmpCity'\n,\tEMP.state\t\t\t\tAS 'EmpState'\n,\tEMP.zip_code\t\t\tAS 'EmpZipcode'\n,\tEMP.email\t\t\t\tAS 'EmpEmail'\n,\tEMP.PremiumNet\t\t\tAS 'PremiumNet'\n,\tEMP.PremiumGross\t\tAS 'PremiumGross'\n,\tEMP.Premiumtax\t\t\tAS 'Premiumtax'\n,\tEMP.NoOfLives\t\t\tAS 'NoOfLives'\n,\tEMP.policyfrom\t\t\tAS 'policyFromDate'\n,\tEMP.policyto\t\t\tAS 'policyToDate'\n,\tEMP.agent\t\t\t\tAS 'Agent'\n,\tEMP.policy_number\t\tAS 'PolicyNo'\n,\tEMP.Contract_Id\t\t\tAS 'PolicyId'\n,\tEMP.bankname\t\t\tAS 'BankName'\t\n,\tEMP.bankAccNo\t\t\tAS 'BankAccNo'\n,\tEMP.bankcity\t\t\tAS 'BankCity'\n,\tEMP.bankstate\t\t\tAS 'BankState'\n\nFROM employers EMP\nWHERE\n\tEMP.isDisabled = 0  ",
+							"value": "SELECT \n\tEMP.employer_id\t\t\tAS 'EmployerId'\n,\tEMP.employer_code\t\tAS 'EmployerCode'\n,\tEMP.name\t\t\t\tAS 'EmployerName'\n,\tEmp.employer_detail_id\tAS 'EmployerDetailid'\n,\tEMP.city\t\t\t\tAS 'EmpCity'\n,\tEMP.state\t\t\t\tAS 'EmpState'\n,\tEMP.zip_code\t\t\tAS 'EmpZipcode'\n,\tEMP.email\t\t\t\tAS 'EmpEmail'\n,\tEMP.PremiumNet\t\t\tAS 'PremiumNet'\n,\tEMP.PremiumGross\t\tAS 'PremiumGross'\n,\tEMP.Premiumtax\t\t\tAS 'Premiumtax'\n,\tEMP.NoOfLives\t\t\tAS 'NoOfLives'\n,\tEMP.policyfrom\t\t\tAS 'policyFromDate'\n,\tEMP.policyto\t\t\tAS 'policyToDate'\n,\tEMP.agent\t\t\t\tAS 'Agent'\n,\tEMP.policy_number\t\tAS 'PolicyNo'\n,\tEMP.Contract_Id\t\t\tAS 'PolicyId'\n,\tEMP.bankname\t\t\tAS 'BankName'\t\n,\tEMP.bankAccNo\t\t\tAS 'BankAccNo'\n,\tEMP.bankcity\t\t\tAS 'BankCity'\n,\tEMP.bankstate\t\t\tAS 'BankState'\n\nFROM employers EMP\nWHERE\n\tEMP.isDisabled = 0  ",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1167,7 +1195,14 @@
 			{
 				"name": "DimHospitalDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LnkClaimProcedureDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1180,7 +1215,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\n\tP.provider_id\t\t\tAS 'HospitalId'\n,\tP.provider_code\t\t\tAS 'HospitalCode'\n,\tP.last_name\t\t\t\tAS 'HospitalName' \n,\tP.is_specialist\t\t\tAS 'IsSpecialist'\n,\tP.is_referring_provider\tAS 'IsReferringProvider'\n,\tP.provider_type_id\t\tAS 'ProviderTypeId'\n,\tL.city\t\t\t\t\tAS 'ProviderCity'\n,\tS.state_name\t\t\tAS 'ProviderState'\n,\tC.country_name\t\t\tAS 'ProviderCountry'\n\nFROM provider_info P\nINNER JOIN lnk_provider_address L ON L.provider_id =P.provider_id\nLEFT OUTER JOIN states S ON S.state_id =L.state\nINNER JOIN Countries C ON C.country_id =S.country_id\n\n ",
+							"value": "SELECT \n\n\tP.provider_id\t\t\tAS 'HospitalId'\n,\tP.provider_code\t\t\tAS 'HospitalCode'\n,\tP.last_name\t\t\t\tAS 'HospitalName' \n,\tP.is_specialist\t\t\tAS 'IsSpecialist'\n,\tP.is_referring_provider\tAS 'IsReferringProvider'\n,\tP.provider_type_id\t\tAS 'ProviderTypeId'\n,\tL.city\t\t\t\t\tAS 'ProviderCity'\n,\tS.state_name\t\t\tAS 'ProviderState'\n,\tC.country_name\t\t\tAS 'ProviderCountry'\n\nFROM provider_info P\nINNER JOIN lnk_provider_address L ON L.provider_id =P.provider_id\nLEFT OUTER JOIN states S ON S.state_id =L.state\nINNER JOIN Countries C ON C.country_id =S.country_id\n\n ",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1329,7 +1364,14 @@
 			{
 				"name": "DimMemberDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimHospitalDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2067,7 +2109,14 @@
 			{
 				"name": "DimMembers",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimEmployers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2245,7 +2294,14 @@
 			{
 				"name": "DimProcedureCategories",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimMembers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2335,7 +2391,14 @@
 			{
 				"name": "DimProcedureCodes",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "DimProcedureCategories",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
