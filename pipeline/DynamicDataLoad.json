@@ -1,0 +1,31 @@
+{
+	"name": "DynamicDataLoad",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_ControlTable",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlPoolSource"
+					},
+					"dataset": {
+						"referenceName": "DynamicStoreProcFromPool",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"annotations": []
+	}
+}
