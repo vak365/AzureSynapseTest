@@ -16,13 +16,86 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "SqlPoolSource"
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT SourceProcedure,\nDestinationtable,\nDestProcedure FROM dbo.ControlTable",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "DynamicStoreProcFromPool",
+						"referenceName": "GetControlTable",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachloop",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_ControlTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlPoolSource",
+									"sqlReaderQuery": {
+										"value": "@activity('Lookup_ControlTable').output.Value",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "SqlPoolSink",
+									"preCopyScript": {
+										"value": "@{activity('Lookup_ControlTable').output.Value}",
+										"type": "Expression"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "DynamicStoreProcFromPool",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DynamicStageLoadTableFromPool",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
 				}
 			}
 		],
