@@ -510,7 +510,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\tL.lcic_id\t\t\t\t\tAS 'ClaimDiagnosisId'\n,\tL.claim_form_detail_id\t\tAS 'ClaimFormDetailId'\n,\tL.icd9_code_id\t\t\t\tAS 'IcdCodeId'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_icd9_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0  ",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'ClaimDiagnosisCodes' \n\n\nSELECT\n\tL.lcic_id\t\t\t\t\tAS 'ClaimDiagnosisId'\n,\tL.claim_form_detail_id\t\tAS 'ClaimFormDetailId'\n,\tL.icd9_code_id\t\t\t\tAS 'IcdCodeId'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_icd9_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0  \nAND\nCAST(CONVERT(VARCHAR(10),cfd.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -519,7 +519,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE LnkClaimDiagnosisCodes",
+							"value": "TRUNCATE TABLE Load.LnkClaimDiagnosisCodes",
 							"type": "Expression"
 						}
 					},
@@ -573,13 +573,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "LnkClaimDiagnosisCodesDS",
+						"referenceName": "ClaimdiagnosiscodesStage",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "LnkClaimDiagnosisCodesPool",
+						"referenceName": "ClaimDiagnosicodesPoolTable",
 						"type": "DatasetReference"
 					}
 				]
@@ -2436,6 +2436,33 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[Load].[UpsertClaimDetails]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure Claim Diagnosi Codes",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "LnkClaimDiagnosisCodes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertLnkClaimDiagnosisCodes]"
 				}
 			}
 		],
