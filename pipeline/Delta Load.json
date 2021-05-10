@@ -600,7 +600,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\t\tL.lccc_id\t\t\t\t\t\tAS 'ClaimProcedureId' \n,\t\tL.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\t\tL.cpt_code_id\t\t\t\t\tAS 'CptCodeId'\n,\t\tL.billed\t\t\t\t\t\tAS 'Billed'\n,\t\tL.net\t\t\t\t\t\t\tAS 'Net'\n,\t\tL.number_of_services\t\t\tAS 'NoofServices'\n,\t\tL.place_of_service_id\t\t\tAS 'PlaceofServiceId'\n,\t\tL.Amount\t\t\t\t\t\tAS 'Amount'\t\n,\t\tL.parent_service_procedure_id\tAS 'ParentServiceProcedureId'\n,\t\tL.GrossAmount\t\t\t\t\tAS 'GrossAmount'\n,\t\tL.Service_Start_Date\t\t\tAS 'ServiceStartDate'\n,\t\tL.Service_End_Date\t\t\t\tAS 'ServiceEndDate'\n,\t\tL.Billed_Gross\t\t\t\t\tAS 'BilledGross'\n,\t\tL.Service_Net\t\t\t\t\tAS 'ServiceNet'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_cpt_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0",
+							"value": "DECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'ClaimProcedureDetails' \n\n\nSELECT\n\t\tL.lccc_id\t\t\t\t\t\tAS 'ClaimProcedureId' \n,\t\tL.claim_form_detail_id\t\t\tAS 'ClaimFormDetailId'\n,\t\tL.cpt_code_id\t\t\t\t\tAS 'CptCodeId'\n,\t\tL.billed\t\t\t\t\t\tAS 'Billed'\n,\t\tL.net\t\t\t\t\t\t\tAS 'Net'\n,\t\tL.number_of_services\t\t\tAS 'NoofServices'\n,\t\tL.place_of_service_id\t\t\tAS 'PlaceofServiceId'\n,\t\tL.Amount\t\t\t\t\t\tAS 'Amount'\t\n,\t\tL.parent_service_procedure_id\tAS 'ParentServiceProcedureId'\n,\t\tL.GrossAmount\t\t\t\t\tAS 'GrossAmount'\n,\t\tL.Service_Start_Date\t\t\tAS 'ServiceStartDate'\n,\t\tL.Service_End_Date\t\t\t\tAS 'ServiceEndDate'\n,\t\tL.Billed_Gross\t\t\t\t\tAS 'BilledGross'\n,\t\tL.Service_Net\t\t\t\t\tAS 'ServiceNet'\n\nFROM claim_form_details CFD\nINNER JOIN lnk_claim_form_cpt_code L ON L.claim_form_detail_id = CFD.claim_form_detail_id\nWHERE \n\tISNULL(CFD.parent_claim_form_id,0) <> 0  \nAND\nCAST(CONVERT(VARCHAR(10),cfd.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -609,7 +609,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE LnkClaimProcedureDetails",
+							"value": "TRUNCATE TABLE Load.ClaimProcedureDetails",
 							"type": "Expression"
 						}
 					},
@@ -2463,6 +2463,33 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertLnkClaimDiagnosisCodes]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure claim Procedure code",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "LnkClaimProcedureDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertLnkClaimProcedureDetails]"
 				}
 			}
 		],
