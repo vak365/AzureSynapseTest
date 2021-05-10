@@ -587,7 +587,14 @@
 			{
 				"name": "LnkClaimProcedureDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Claim Diagnosi Codes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -845,7 +852,14 @@
 			{
 				"name": "DimEmployersStageLoad",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure claim Procedure code",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1167,7 +1181,14 @@
 			{
 				"name": "DimHospitalDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Employers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1329,7 +1350,14 @@
 			{
 				"name": "DimMemberDetails",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Hospital Details",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2067,7 +2095,14 @@
 			{
 				"name": "DimMembers",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Members",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2245,7 +2280,14 @@
 			{
 				"name": "DimProcedureCategories",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Member Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2335,7 +2377,14 @@
 			{
 				"name": "DimProcedureCodes",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure Procedure Category",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2652,6 +2701,41 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertDimProcedureCodes]"
+				}
+			},
+			{
+				"name": "Updae Log count",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "SQL pool stored procedure  Codes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "UPDATE [Load].[Log] SET LastUpdatedDate = GETDATE()",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "UpdateLogtable",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
