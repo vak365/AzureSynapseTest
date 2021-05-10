@@ -1,0 +1,33 @@
+{
+	"name": "DynamicStoredProceFromDatabase",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServerSynapse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "Log_Detail_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LogId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CompletedDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "Load",
+			"table": "LogDetails"
+		}
+	}
+}

@@ -64,11 +64,13 @@
 							"userProperties": [],
 							"typeProperties": {
 								"source": {
-									"type": "SqlPoolSource",
+									"type": "SqlServerSource",
 									"sqlReaderStoredProcedureName": {
 										"value": "@item().SourceProcedure",
 										"type": "Expression"
-									}
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlPoolSink",
@@ -89,7 +91,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "DynamicStoreProcFromPool",
+									"referenceName": "DynamicStoredProceFromDatabase",
 									"type": "DatasetReference"
 								}
 							],
