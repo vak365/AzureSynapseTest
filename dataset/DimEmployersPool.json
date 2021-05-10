@@ -105,8 +105,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "dbo",
-			"table": "DimEmployers"
+			"schema": "Load",
+			"table": "Employers"
 		},
 		"sqlPool": {
 			"referenceName": "SqlPoolTableSynapse",
