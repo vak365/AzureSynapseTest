@@ -2080,7 +2080,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "\n\nSELECT DISTINCT \n\n\tM.member_id\n,\tM.member_code\n,\tM.first_name\n,\tM.last_name\n,\tM.date_birth\n,\tM.sex\n,\tM.subscriber_id\n,\tM.user_id\n,\tM.FullMemberName\n,\tM.SequenceNo\n--,\tM.Date_Created\n\t \n\nFROM  member_details_tmp MDT \nINNER JOIN members_tmp M ON MDT.member_id = M.member_id\n ",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'Members' \n\nSELECT DISTINCT \n\n\tM.member_id\n,\tM.member_code\n,\tM.first_name\n,\tM.last_name\n,\tM.date_birth\n,\tM.sex\n,\tM.subscriber_id\n,\tM.user_id\n,\tM.FullMemberName\n,\tM.SequenceNo\n--,\tM.Date_Created\nFROM  member_details_tmp MDT \nINNER JOIN members_tmp M ON MDT.member_id = M.member_id\n \n WHERE CAST(CONVERT(VARCHAR(10),MDT.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -2089,7 +2089,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimMembers",
+							"value": "TRUNCATE TABLE Load.Members",
 							"type": "Expression"
 						}
 					},
@@ -2258,7 +2258,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT \n\tP.procedure_category_id\t\tAS ProcedureCategoryId\n,\tP.procedure_category_code\tAS ProcedureCategoryCode\n,\tP.description\t\t\t\tAS ProcedureCategoryDesc\n\nFROM procedure_categories P ",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'ProcedureCategories' \n\nSELECT \n\tP.procedure_category_id\t\tAS ProcedureCategoryId\n,\tP.procedure_category_code\tAS ProcedureCategoryCode\n,\tP.description\t\t\t\tAS ProcedureCategoryDesc\n\nFROM procedure_categories P \nWHERE CAST(CONVERT(VARCHAR(10),p.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -2267,7 +2267,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimProcedureCategories",
+							"value": "TRUNCATE TABLE Load.ProcedureCategories",
 							"type": "Expression"
 						}
 					},
@@ -2348,7 +2348,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT \n\tCPT.cpt_code_id\t\t\t\tAS CptCodeId\n,\tCPT.Cpt_Code\t\t\t\tAS CptCode\n,\tCPT.description\t\t\t\tAS CptDescription\n,\tCPT.procedure_category_id\tAS ProcedureCategoryId\n\nFROM cpt_codes CPT\nWHERE\n\tCPT.is_invalid = 0 AND\n\tCPT.Type = 'CPT' \n",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'ProcedureCodes' \n\nSELECT \n\tCPT.cpt_code_id\t\t\t\tAS CptCodeId\n,\tCPT.Cpt_Code\t\t\t\tAS CptCode\n,\tCPT.description\t\t\t\tAS CptDescription\n,\tCPT.procedure_category_id\tAS ProcedureCategoryId\n\nFROM cpt_codes CPT\nWHERE\n\tCPT.is_invalid = 0 AND\n\tCPT.Type = 'CPT' AND\n\tCAST(CONVERT(VARCHAR(10),CPT.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -2357,7 +2357,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimProcedureCodes",
+							"value": "TRUNCATE TABLE [Load].[ProcedureCodes]",
 							"type": "Expression"
 						}
 					},
@@ -2544,6 +2544,107 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertDimHospitalDetails]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure1",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimMemberDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			},
+			{
+				"name": "SQL pool stored procedure Member Load",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimMembers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimMembers]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure Procedure Category",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimProcedureCategories",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimProcedureCategories]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure  Codes",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimProcedureCodes",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimProcedureCodes]"
 				}
 			}
 		],
