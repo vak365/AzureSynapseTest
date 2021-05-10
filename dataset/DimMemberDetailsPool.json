@@ -270,8 +270,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "dbo",
-			"table": "DimMemberDetails"
+			"schema": "Load",
+			"table": "MemberDetails"
 		},
 		"sqlPool": {
 			"referenceName": "SqlPoolTableSynapse",

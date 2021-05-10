@@ -1342,7 +1342,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "\nSELECT \n\tmember_detail_id\n,\tmember_id\n,\tstart_effective_date\n,\tend_effective_date\n,\tlocation_id\n,\temployer_id\n,\tproduct_type_id\n,\tcity\n,\tstate\n,\tzip_code\n,\temail\n,\tMobileNo\n,\tPanNo\n,\tDrivingNo\n,\tVoterID\n,\tRation_Card\n,\tmember_code_tmp\n,\tis_missing\n,\tAccountNo\n,\tBank_Name\n,\tBank_Branch\n,\tBranch_Code\n,\tDesignation\n,\tDepartment\n,\tPolicytype\n,\tProductID\n,\tpolicyNo\n,\tSumInsured\n,\tCummulative\n,\tPremium\n,\tRenewal\n,\tSubscriber_Detail_id\n,\tRelationshipID\n,\tPlan_id\n,\tSumInsuredper\n,\tCardPer\n,\tEmployee_No\n,\tBloodgroup\n,\tSalaryGrade\n,\tCoInsurance\n,\tagentcode\n,\tmember_insurer_id\n,\tcountry\n,\tdistrict\n,\tworkflow_current_sequence_id\n,\tpolicy_from_date\n,\tpolicy_to_date\n,\tContract_Id\n,\tDateCreated\n,\tcovered_from_date\n,\tEnd_Ren_Date\n,\tendorsement_no\n,\tEndorsement_Date\n,\tParent_Member_detail_id\n--,\tIsRecommenced\n--,\tSeqNo\n,\tMemberCreatedDate\n,\tModifiedDate\n--,\tEndorsement_Comment\n--,\tRenewalNo\n\nFROM  member_details_tmp MDT ",
+							"value": "DECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'MemberDetails' \nSELECT \n\tmember_detail_id\n,\tmember_id\n,\tstart_effective_date\n,\tend_effective_date\n,\tlocation_id\n,\temployer_id\n,\tproduct_type_id\n,\tcity\n,\tstate\n,\tzip_code\n,\temail\n,\tMobileNo\n,\tPanNo\n,\tDrivingNo\n,\tVoterID\n,\tRation_Card\n,\tmember_code_tmp\n,\tis_missing\n,\tAccountNo\n,\tBank_Name\n,\tBank_Branch\n,\tBranch_Code\n,\tDesignation\n,\tDepartment\n,\tPolicytype\n,\tProductID\n,\tpolicyNo\n,\tSumInsured\n,\tCummulative\n,\tPremium\n,\tRenewal\n,\tSubscriber_Detail_id\n,\tRelationshipID\n,\tPlan_id\n,\tSumInsuredper\n,\tCardPer\n,\tEmployee_No\n,\tBloodgroup\n,\tSalaryGrade\n,\tCoInsurance\n,\tagentcode\n,\tmember_insurer_id\n,\tcountry\n,\tdistrict\n,\tworkflow_current_sequence_id\n,\tpolicy_from_date\n,\tpolicy_to_date\n,\tContract_Id\n,\tDateCreated\n,\tcovered_from_date\n,\tEnd_Ren_Date\n,\tendorsement_no\n,\tEndorsement_Date\n,\tParent_Member_detail_id\n--,\tIsRecommenced\n--,\tSeqNo\n,\tMemberCreatedDate\n,\tModifiedDate\n--,\tEndorsement_Comment\n--,\tRenewalNo\n\nFROM  member_details_tmp MDT \n WHERE CAST(CONVERT(VARCHAR(10),MDT.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1351,7 +1351,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimMemberDetails",
+							"value": "TRUNCATE TABLE Load.MemberDetails",
 							"type": "Expression"
 						}
 					},
@@ -2547,7 +2547,7 @@
 				}
 			},
 			{
-				"name": "SQL pool stored procedure1",
+				"name": "SQL pool stored procedure Members",
 				"type": "SqlPoolStoredProcedure",
 				"dependsOn": [
 					{
@@ -2564,7 +2564,14 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimMemberDetails]"
+				}
 			},
 			{
 				"name": "SQL pool stored procedure Member Load",
