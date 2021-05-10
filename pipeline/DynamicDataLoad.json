@@ -18,7 +18,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT SourceProcedure,\nDestinationtable,\nDestProcedure FROM dbo.ControlTable",
+							"value": "SELECT * FROM dbo.ControlTable",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -75,7 +75,7 @@
 								"sink": {
 									"type": "SqlPoolSink",
 									"preCopyScript": {
-										"value": "@{concat('TRUNCATE TABLE  ',item().Destinationtable)}",
+										"value": "@{concat('TRUNCATE TABLE Load.',item().Destinationtable)}",
 										"type": "Expression"
 									}
 								},
@@ -107,6 +107,72 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "SQL pool stored procedure1",
+							"type": "SqlPoolStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy data1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"sqlPool": {
+								"referenceName": "SqlPoolTableSynapse",
+								"type": "SqlPoolReference"
+							},
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@item().DestProcedure",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Stored procedure1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "SQL pool stored procedure1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[UpdateLogTable]",
+								"storedProcedureParameters": {
+									"jobName": {
+										"value": {
+											"value": "@item().DestinationtableSQLPool",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "SqlServerSynapse",
+								"type": "LinkedServiceReference"
+							}
 						}
 					]
 				}
