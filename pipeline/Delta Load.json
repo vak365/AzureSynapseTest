@@ -843,7 +843,7 @@
 				]
 			},
 			{
-				"name": "DimEmployers",
+				"name": "DimEmployersStageLoad",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -858,7 +858,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\tEMP.employer_id\t\t\tAS 'EmployerId'\n,\tEMP.employer_code\t\tAS 'EmployerCode'\n,\tEMP.name\t\t\t\tAS 'EmployerName'\n,\tEmp.employer_detail_id\tAS 'EmployerDetailid'\n,\tEMP.city\t\t\t\tAS 'EmpCity'\n,\tEMP.state\t\t\t\tAS 'EmpState'\n,\tEMP.zip_code\t\t\tAS 'EmpZipcode'\n,\tEMP.email\t\t\t\tAS 'EmpEmail'\n,\tEMP.PremiumNet\t\t\tAS 'PremiumNet'\n,\tEMP.PremiumGross\t\tAS 'PremiumGross'\n,\tEMP.Premiumtax\t\t\tAS 'Premiumtax'\n,\tEMP.NoOfLives\t\t\tAS 'NoOfLives'\n,\tEMP.policyfrom\t\t\tAS 'policyFromDate'\n,\tEMP.policyto\t\t\tAS 'policyToDate'\n,\tEMP.agent\t\t\t\tAS 'Agent'\n,\tEMP.policy_number\t\tAS 'PolicyNo'\n,\tEMP.Contract_Id\t\t\tAS 'PolicyId'\n,\tEMP.bankname\t\t\tAS 'BankName'\t\n,\tEMP.bankAccNo\t\t\tAS 'BankAccNo'\n,\tEMP.bankcity\t\t\tAS 'BankCity'\n,\tEMP.bankstate\t\t\tAS 'BankState'\n\nFROM employers EMP\nWHERE\n\tEMP.isDisabled = 0  ",
+							"value": "DECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'Employers' \n\n\nSELECT \n\tEMP.employer_id\t\t\tAS 'EmployerId'\n,\tEMP.employer_code\t\tAS 'EmployerCode'\n,\tEMP.name\t\t\t\tAS 'EmployerName'\n,\tEmp.employer_detail_id\tAS 'EmployerDetailid'\n,\tEMP.city\t\t\t\tAS 'EmpCity'\n,\tEMP.state\t\t\t\tAS 'EmpState'\n,\tEMP.zip_code\t\t\tAS 'EmpZipcode'\n,\tEMP.email\t\t\t\tAS 'EmpEmail'\n,\tEMP.PremiumNet\t\t\tAS 'PremiumNet'\n,\tEMP.PremiumGross\t\tAS 'PremiumGross'\n,\tEMP.Premiumtax\t\t\tAS 'Premiumtax'\n,\tEMP.NoOfLives\t\t\tAS 'NoOfLives'\n,\tEMP.policyfrom\t\t\tAS 'policyFromDate'\n,\tEMP.policyto\t\t\tAS 'policyToDate'\n,\tEMP.agent\t\t\t\tAS 'Agent'\n,\tEMP.policy_number\t\tAS 'PolicyNo'\n,\tEMP.Contract_Id\t\t\tAS 'PolicyId'\n,\tEMP.bankname\t\t\tAS 'BankName'\t\n,\tEMP.bankAccNo\t\t\tAS 'BankAccNo'\n,\tEMP.bankcity\t\t\tAS 'BankCity'\n,\tEMP.bankstate\t\t\tAS 'BankState'\n\nFROM employers EMP\nWHERE\n\tEMP.isDisabled = 0 \nAND \nCAST(CONVERT(VARCHAR(10),ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -867,7 +867,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimEmployers",
+							"value": "TRUNCATE TABLE [Load].[Employers]",
 							"type": "Expression"
 						}
 					},
@@ -2490,6 +2490,33 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertLnkClaimProcedureDetails]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure Employers",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimEmployersStageLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimEmployers]"
 				}
 			}
 		],
