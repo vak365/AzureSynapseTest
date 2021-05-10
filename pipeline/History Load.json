@@ -95,14 +95,7 @@
 			{
 				"name": "FactClaimDetails",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimDiagnosisCodes",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -504,14 +497,7 @@
 			{
 				"name": "LnkClaimDiagnosisCodes",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FactClaimDetails",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -601,14 +587,7 @@
 			{
 				"name": "LnkClaimProcedureDetails",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "LnkClaimDiagnosisCodes",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -866,14 +845,7 @@
 			{
 				"name": "DimEmployers",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimMemberDetails",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1195,14 +1167,7 @@
 			{
 				"name": "DimHospitalDetails",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "LnkClaimProcedureDetails",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1364,14 +1329,7 @@
 			{
 				"name": "DimMemberDetails",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimHospitalDetails",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2109,14 +2067,7 @@
 			{
 				"name": "DimMembers",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimEmployers",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2294,14 +2245,7 @@
 			{
 				"name": "DimProcedureCategories",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimMembers",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -2391,14 +2335,7 @@
 			{
 				"name": "DimProcedureCodes",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DimProcedureCategories",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
