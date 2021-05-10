@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 12",
+	"properties": {
+		"content": {
+			"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nalter PROC [dbo].[UpsertLnkClaimDiagnosisCodes] AS\nBEGIN\n\nUPDATE diag SET ClaimDiagnosisId = diagStage.ClaimDiagnosisId,\nClaimFormDetailId= diagStage.ClaimFormDetailId,\nIcdCodeId= diagStage.IcdCodeId\nFROM\nLnkClaimDiagnosisCodes diag\nJOIN\nLoad.LnkClaimDiagnosisCodes diagStage ON\ndiag.ClaimDiagnosisId = diagStage.ClaimDiagnosisId\n\ninsert into dbo.LnkClaimDiagnosisCodes (ClaimDiagnosisId,ClaimFormDetailId,IcdCodeId)\nSELECT diagStage.ClaimDiagnosisId, \ndiagStage.ClaimFormDetailId, \ndiagStage.IcdCodeId\nFROM\nLoad.LnkClaimDiagnosisCodes diagStage \nLEFT JOIN \nLnkClaimDiagnosisCodes diag ON diag.ClaimDiagnosisId = diagStage.ClaimDiagnosisId\nWHERE diag.IcdCodeId IS NULL\n\n\nEND\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "SqlPoolTableSynapse",
+				"databaseName": "SqlPoolTableSynapse"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

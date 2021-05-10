@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 11",
+	"properties": {
+		"content": {
+			"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [Load].[LnkClaimDiagnosisCodes]\n( \n\t[ClaimDiagnosisId] [int]  NOT NULL,\n\t[ClaimFormDetailId] [int]  NULL,\n\t[IcdCodeId] [int]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [ClaimDiagnosisId] ),\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "SqlPoolTableSynapse",
+				"databaseName": "SqlPoolTableSynapse"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
