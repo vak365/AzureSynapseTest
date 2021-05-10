@@ -7,7 +7,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "DimEmployers",
+						"activity": "DimHospitalDetails",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -610,7 +610,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "DimHospitalDetails",
+						"activity": "DimProcedureCodes",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1204,7 +1204,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "DimProcedureCodes",
+						"activity": "DimEmployers",
 						"dependencyConditions": [
 							"Succeeded"
 						]
