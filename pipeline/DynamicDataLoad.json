@@ -44,6 +44,11 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_ControlTable').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Copy data1",
@@ -60,15 +65,15 @@
 							"typeProperties": {
 								"source": {
 									"type": "SqlPoolSource",
-									"sqlReaderQuery": {
-										"value": "@activity('Lookup_ControlTable').output.Value",
+									"sqlReaderStoredProcedureName": {
+										"value": "@item().SourceProcedure",
 										"type": "Expression"
 									}
 								},
 								"sink": {
 									"type": "SqlPoolSink",
 									"preCopyScript": {
-										"value": "@{activity('Lookup_ControlTable').output.Value}",
+										"value": "@{concat('TRUNCATE TABLE  ',item().Destinationtable)}",
 										"type": "Expression"
 									}
 								},
@@ -91,7 +96,13 @@
 							"outputs": [
 								{
 									"referenceName": "DynamicStageLoadTableFromPool",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@item().Destinationtable",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}

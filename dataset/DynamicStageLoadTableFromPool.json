@@ -1,9 +1,21 @@
 {
 	"name": "DynamicStageLoadTableFromPool",
 	"properties": {
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "SqlPoolTable",
 		"schema": [],
+		"typeProperties": {
+			"schema": "load",
+			"table": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		},
 		"sqlPool": {
 			"referenceName": "SqlPoolTableSynapse",
 			"type": "SqlPoolReference"
