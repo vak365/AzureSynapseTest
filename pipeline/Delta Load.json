@@ -1180,7 +1180,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT TOP 100\n\n\tP.provider_id\t\t\tAS 'HospitalId'\n,\tP.provider_code\t\t\tAS 'HospitalCode'\n,\tP.last_name\t\t\t\tAS 'HospitalName' \n,\tP.is_specialist\t\t\tAS 'IsSpecialist'\n,\tP.is_referring_provider\tAS 'IsReferringProvider'\n,\tP.provider_type_id\t\tAS 'ProviderTypeId'\n,\tL.city\t\t\t\t\tAS 'ProviderCity'\n,\tS.state_name\t\t\tAS 'ProviderState'\n,\tC.country_name\t\t\tAS 'ProviderCountry'\n\nFROM provider_info P\nINNER JOIN lnk_provider_address L ON L.provider_id =P.provider_id\nLEFT OUTER JOIN states S ON S.state_id =L.state\nINNER JOIN Countries C ON C.country_id =S.country_id\n\n ",
+							"value": "\nDECLARE @LastUpdatedDate DATETIME\nSELECT @LastUpdatedDate  = LastUpdatedDate FROM [Load].[Log]  WHERE FileType = 'HospitalDetails' \n\nSELECT \n\n\tP.provider_id\t\t\tAS 'HospitalId'\n,\tP.provider_code\t\t\tAS 'HospitalCode'\n,\tP.last_name\t\t\t\tAS 'HospitalName' \n,\tP.is_specialist\t\t\tAS 'IsSpecialist'\n,\tP.is_referring_provider\tAS 'IsReferringProvider'\n,\tP.provider_type_id\t\tAS 'ProviderTypeId'\n,\tL.city\t\t\t\t\tAS 'ProviderCity'\n,\tS.state_name\t\t\tAS 'ProviderState'\n,\tC.country_name\t\t\tAS 'ProviderCountry'\n\nFROM provider_info P\nINNER JOIN lnk_provider_address L ON L.provider_id =P.provider_id\nLEFT OUTER JOIN states S ON S.state_id =L.state\nINNER JOIN Countries C ON C.country_id =S.country_id\nAND \nCAST(CONVERT(VARCHAR(10),p.ModifiedDate,120) AS DATETIME) >= CAST(CONVERT(VARCHAR(10),@LastUpdatedDate,120) AS DATETIME)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1189,7 +1189,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "TRUNCATE TABLE DimHospitalDetails",
+							"value": "TRUNCATE TABLE [Load].[HospitalDetails]",
 							"type": "Expression"
 						}
 					},
@@ -1321,7 +1321,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "DimHospitalDetailsPool",
+						"referenceName": "HospitalDetailsPoolLoad",
 						"type": "DatasetReference"
 					}
 				]
@@ -2517,6 +2517,33 @@
 				},
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[UpsertDimEmployers]"
+				}
+			},
+			{
+				"name": "SQL pool stored procedure Hospital Details",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DimHospitalDetails",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "SqlPoolTableSynapse",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpsertDimHospitalDetails]"
 				}
 			}
 		],

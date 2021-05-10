@@ -1,0 +1,55 @@
+{
+	"name": "HospitalDetailsPoolLoad",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "HospitalId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "HospitalCode",
+				"type": "varchar"
+			},
+			{
+				"name": "HospitalName",
+				"type": "varchar"
+			},
+			{
+				"name": "IsSpecialist",
+				"type": "bit"
+			},
+			{
+				"name": "IsReferringProvider",
+				"type": "bit"
+			},
+			{
+				"name": "ProviderTypeId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProviderCity",
+				"type": "varchar"
+			},
+			{
+				"name": "ProviderState",
+				"type": "varchar"
+			},
+			{
+				"name": "ProviderCountry",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Load",
+			"table": "HospitalDetails"
+		},
+		"sqlPool": {
+			"referenceName": "SqlPoolTableSynapse",
+			"type": "SqlPoolReference"
+		}
+	}
+}
