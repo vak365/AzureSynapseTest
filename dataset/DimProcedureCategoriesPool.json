@@ -19,8 +19,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "Load",
-			"table": "ProcedureCategories"
+			"schema": "dbo",
+			"table": "DimProcedureCategories"
 		},
 		"sqlPool": {
 			"referenceName": "ClaimsSummaryDSQL",
