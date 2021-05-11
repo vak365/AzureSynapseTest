@@ -127,10 +127,6 @@
 								"secureInput": false
 							},
 							"userProperties": [],
-							"sqlPool": {
-								"referenceName": "SqlPoolTableSynapse",
-								"type": "SqlPoolReference"
-							},
 							"typeProperties": {
 								"storedProcedureName": {
 									"value": "@item().DestProcedure",
@@ -168,10 +164,6 @@
 										"type": "String"
 									}
 								}
-							},
-							"linkedServiceName": {
-								"referenceName": "SqlServerSynapse",
-								"type": "LinkedServiceReference"
 							}
 						}
 					]

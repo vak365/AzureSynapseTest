@@ -1,10 +1,6 @@
 {
 	"name": "UpdateLogtable",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "SqlServerSynapse",
-			"type": "LinkedServiceReference"
-		},
 		"annotations": [],
 		"type": "SqlServerTable",
 		"schema": []
