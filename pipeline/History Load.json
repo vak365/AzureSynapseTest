@@ -34,7 +34,7 @@
 					"sink": {
 						"type": "SqlPoolSink",
 						"preCopyScript": {
-							"value": "DELETE FROM dbo.DIMDiagnosisCodes",
+							"value": "DELETE FROM dbo.DimDiagnosisCodes",
 							"type": "Expression"
 						}
 					},
