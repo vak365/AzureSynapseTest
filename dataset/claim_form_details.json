@@ -6,10 +6,10 @@
 		"schema": [],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "claim_form_details"
+			"table": "ClaimsSummary"
 		},
 		"sqlPool": {
-			"referenceName": "SqlPoolTableSynapse",
+			"referenceName": "ClaimsSummaryDSQL",
 			"type": "SqlPoolReference"
 		}
 	},
