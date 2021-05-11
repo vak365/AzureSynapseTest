@@ -52,8 +52,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "Load",
-			"table": "Members"
+			"schema": "dbo",
+			"table": "DimMembers"
 		},
 		"sqlPool": {
 			"referenceName": "ClaimsSummaryDSQL",
