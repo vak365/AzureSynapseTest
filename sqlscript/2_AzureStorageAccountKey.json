@@ -1,5 +1,5 @@
 {
-	"name": "AzureStorageAccountKey",
+	"name": "2_AzureStorageAccountKey",
 	"properties": {
 		"content": {
 			"query": "CREATE DATABASE SCOPED CREDENTIAL AzureStorageAccountKey\nWITH IDENTITY = 'azsynapsehackdl'\n    ,SECRET = 'xZXpI0yaSYwJBLEI4ZXkGDaBq+SPaFUegCw22tHqVqPFbYmaChyWQaEolwNeufRjPN2Op3oZP7jNJeFrkhEsyQ=='\n",
