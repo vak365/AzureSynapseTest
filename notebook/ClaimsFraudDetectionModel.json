@@ -26,7 +26,7 @@
 			},
 			"kernelspec": {
 				"name": "synapse_pyspark",
-				"display_name": "Synapse PySpark"
+				"display_name": "python"
 			},
 			"language_info": {
 				"name": "python"
@@ -57,8 +57,7 @@
 					"from azureml.train.automl import AutoMLConfig\n",
 					"from azureml.data.dataset_factory import TabularDatasetFactory"
 				],
-				"attachments": null,
-				"execution_count": 6
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -66,13 +65,12 @@
 					"subscription_id = \"aca19d61-2015-4f99-b2ad-ba3999763cd7\"\n",
 					"resource_group = \"azureresourcegroup\"\n",
 					"workspace_name = \"azuremlworkspace1986\"\n",
-					"experiment_name = \"sampesynapseworkspace-claimsfrauddataforml-20210506061909\"\n",
+					"experiment_name = \"sampesynapseworkspace-claimsfrauddataforml-20210506011405\"\n",
 					"\n",
 					"ws = Workspace(subscription_id = subscription_id, resource_group = resource_group, workspace_name = workspace_name)\n",
 					"experiment = Experiment(ws, experiment_name)"
 				],
-				"attachments": null,
-				"execution_count": 7
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -82,8 +80,7 @@
 					"datastore = Datastore.get_default(ws)\n",
 					"dataset = TabularDatasetFactory.register_spark_dataframe(df, datastore, name = experiment_name + \"-dataset\")"
 				],
-				"attachments": null,
-				"execution_count": 8
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -93,28 +90,25 @@
 					"                             training_data = dataset,\n",
 					"                             label_column_name = \"IsFraudClaim\",\n",
 					"                             primary_metric = \"accuracy\",\n",
-					"                             experiment_timeout_hours = 0.3,\n",
-					"                             max_concurrent_iterations = 2,\n",
+					"                             experiment_timeout_hours = 1,\n",
+					"                             max_concurrent_iterations = 1,\n",
 					"                             enable_onnx_compatible_models = True)"
 				],
-				"attachments": null,
-				"execution_count": 15
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"run = experiment.submit(automl_config)"
 				],
-				"attachments": null,
-				"execution_count": 16
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"displayHTML(\"<a href={} target='_blank'>Your experiment in Azure Machine Learning portal: {}</a>\".format(run.get_portal_url(), run.id))"
 				],
-				"attachments": null,
-				"execution_count": 17
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -173,10 +167,9 @@
 					"    mlflow.onnx.log_model(onnx_model, artifact_path, signature=signature)\n",
 					"\n",
 					"    # Register the model to AML model registry\n",
-					"    mlflow.register_model(\"runs:/\" + run.info.run_id + \"/\" + artifact_path, \"sampesynapseworkspace-claimsfrauddataforml-20210506061909-Best\")"
+					"    mlflow.register_model(\"runs:/\" + run.info.run_id + \"/\" + artifact_path, \"sampesynapseworkspace-claimsfrauddataforml-20210506011405-Best\")"
 				],
-				"attachments": null,
-				"execution_count": 18
+				"execution_count": null
 			}
 		]
 	}
