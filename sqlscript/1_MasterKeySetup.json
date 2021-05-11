@@ -1,0 +1,17 @@
+{
+	"name": "1_MasterKeySetup",
+	"properties": {
+		"content": {
+			"query": "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '{Password}'",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "ClaimsSummaryDSQL",
+				"databaseName": "ClaimsSummaryDSQL"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
