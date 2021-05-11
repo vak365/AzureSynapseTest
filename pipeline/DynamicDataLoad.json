@@ -127,6 +127,10 @@
 								"secureInput": false
 							},
 							"userProperties": [],
+							"sqlPool": {
+								"referenceName": "ClaimsSummaryDSQL",
+								"type": "SqlPoolReference"
+							},
 							"typeProperties": {
 								"storedProcedureName": {
 									"value": "@item().DestProcedure",
@@ -154,7 +158,7 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"storedProcedureName": "[dbo].[UpdateLogTable]",
+								"storedProcedureName": "updatelog",
 								"storedProcedureParameters": {
 									"jobName": {
 										"value": {
@@ -164,6 +168,10 @@
 										"type": "String"
 									}
 								}
+							},
+							"linkedServiceName": {
+								"referenceName": "SqlServerSynapse",
+								"type": "LinkedServiceReference"
 							}
 						}
 					]
