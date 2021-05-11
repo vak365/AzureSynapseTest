@@ -3,6 +3,10 @@
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool2021",
+			"type": "BigDataPoolReference"
+		},
 		"sessionProperties": {
 			"driverMemory": "28g",
 			"driverCores": 4,
@@ -22,10 +26,25 @@
 			},
 			"kernelspec": {
 				"name": "synapse_spark",
-				"display_name": "scala"
+				"display_name": "Synapse Spark"
 			},
 			"language_info": {
 				"name": "scala"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/06a2d317-3061-45f6-89b4-4ef3424d6693/resourceGroups/az-synapse-hack-rg/providers/Microsoft.Synapse/workspaces/az-synapse-hack-ws/bigDataPools/sparkpool2021",
+				"name": "sparkpool2021",
+				"type": "Spark",
+				"endpoint": "https://az-synapse-hack-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2021",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -39,10 +58,11 @@
 				},
 				"source": [
 					"%%spark\n",
+					"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\n",
 					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.dbo.ClaimsSummary\") \n",
 					"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 				],
-				"execution_count": null
+				"execution_count": 3
 			}
 		]
 	}
