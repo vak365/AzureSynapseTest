@@ -1,0 +1,275 @@
+{
+	"name": "dsExternalTPAsink",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "TPA_name",
+				"type": "varchar"
+			},
+			{
+				"name": "TPA_code",
+				"type": "varchar"
+			},
+			{
+				"name": "BILL_NO",
+				"type": "varchar"
+			},
+			{
+				"name": "Modified Claim FIR No",
+				"type": "varchar"
+			},
+			{
+				"name": "SBU_Code",
+				"type": "varchar"
+			},
+			{
+				"name": "Group name",
+				"type": "varchar"
+			},
+			{
+				"name": "POLICY_NO",
+				"type": "varchar"
+			},
+			{
+				"name": "Product Type",
+				"type": "varchar"
+			},
+			{
+				"name": "Client_code",
+				"type": "varchar"
+			},
+			{
+				"name": "Policy_start_ date",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Policy_end_date",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Claim_type",
+				"type": "varchar"
+			},
+			{
+				"name": "INSURED_NAME",
+				"type": "varchar"
+			},
+			{
+				"name": "Employee_name",
+				"type": "varchar"
+			},
+			{
+				"name": "Employee_No",
+				"type": "varchar"
+			},
+			{
+				"name": "Member_ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Age",
+				"type": "varchar"
+			},
+			{
+				"name": "Consolidated Relation",
+				"type": "varchar"
+			},
+			{
+				"name": "Provider name",
+				"type": "varchar"
+			},
+			{
+				"name": "Provider code",
+				"type": "varchar"
+			},
+			{
+				"name": "Payee address",
+				"type": "varchar"
+			},
+			{
+				"name": "Payee City",
+				"type": "varchar"
+			},
+			{
+				"name": "Payee State",
+				"type": "varchar"
+			},
+			{
+				"name": "Date of last document received",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "LOSS_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Date Of Discharge",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Disease Description",
+				"type": "varchar"
+			},
+			{
+				"name": "Procedure Description",
+				"type": "varchar"
+			},
+			{
+				"name": "Claimed Amount",
+				"type": "varchar"
+			},
+			{
+				"name": "NAME_PRINT_ON_CHECK",
+				"type": "varchar"
+			},
+			{
+				"name": "PAYMENT_MODE",
+				"type": "varchar"
+			},
+			{
+				"name": "PAYEE_ACCT",
+				"type": "varchar"
+			},
+			{
+				"name": "PAYEE_BANK_IFSC_CODE",
+				"type": "varchar"
+			},
+			{
+				"name": "Delivery_to",
+				"type": "varchar"
+			},
+			{
+				"name": "Payable location",
+				"type": "varchar"
+			},
+			{
+				"name": "LINE_AMOUNT",
+				"type": "varchar"
+			},
+			{
+				"name": "Claim_amount_type",
+				"type": "varchar"
+			},
+			{
+				"name": "Service_tax applicable",
+				"type": "varchar"
+			},
+			{
+				"name": "TDS applicable",
+				"type": "varchar"
+			},
+			{
+				"name": "TDS %",
+				"type": "varchar"
+			},
+			{
+				"name": "PAN NO",
+				"type": "varchar"
+			},
+			{
+				"name": "Service_tax amount",
+				"type": "varchar"
+			},
+			{
+				"name": "Service_tax Registration no",
+				"type": "varchar"
+			},
+			{
+				"name": "Serive_tax invoice No",
+				"type": "varchar"
+			},
+			{
+				"name": "Service_tax_invoice_date",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Payee Mail ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Payee Mobile No",
+				"type": "varchar"
+			},
+			{
+				"name": "Claim status",
+				"type": "varchar"
+			},
+			{
+				"name": "Status Code",
+				"type": "varchar"
+			},
+			{
+				"name": "Claim Number",
+				"type": "varchar"
+			},
+			{
+				"name": "Oracle Invoice number",
+				"type": "varchar"
+			},
+			{
+				"name": "Error Description",
+				"type": "varchar"
+			},
+			{
+				"name": "Date Created",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Date Modified",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Customer Payment Reference Number",
+				"type": "varchar"
+			},
+			{
+				"name": "Transferred Date",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Oracle TDS Amount",
+				"type": "varchar"
+			},
+			{
+				"name": "Transferred Amount",
+				"type": "varchar"
+			},
+			{
+				"name": "Created By",
+				"type": "varchar"
+			},
+			{
+				"name": "Modified By",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ExternalTPAdata"
+		},
+		"sqlPool": {
+			"referenceName": "ClaimsSummaryDSQL",
+			"type": "SqlPoolReference"
+		}
+	}
+}
