@@ -1,0 +1,17 @@
+{
+	"name": "AzureStorageAccountKey",
+	"properties": {
+		"content": {
+			"query": "CREATE DATABASE SCOPED CREDENTIAL AzureStorageAccountKey\nWITH IDENTITY = 'azsynapsehackdl'\n    ,SECRET = 'xZXpI0yaSYwJBLEI4ZXkGDaBq+SPaFUegCw22tHqVqPFbYmaChyWQaEolwNeufRjPN2Op3oZP7jNJeFrkhEsyQ=='\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "ClaimsSummaryDSQL",
+				"databaseName": "ClaimsSummaryDSQL"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
