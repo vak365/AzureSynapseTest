@@ -19,8 +19,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "load",
-			"table": "DiagnosisCodes"
+			"schema": "dbo",
+			"table": "DimDiagnosisCodes"
 		},
 		"sqlPool": {
 			"referenceName": "ClaimsSummaryDSQL",
