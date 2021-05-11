@@ -1,0 +1,19 @@
+{
+	"name": "dsExternalParquetfile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "OnPremFileLocation",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "ExternalTPA.parquet"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
