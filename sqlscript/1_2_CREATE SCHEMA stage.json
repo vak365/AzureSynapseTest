@@ -1,0 +1,17 @@
+{
+	"name": "1_2_CREATE SCHEMA stage",
+	"properties": {
+		"content": {
+			"query": "CREATE SCHEMA stage",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "ClaimsSummaryDSQL",
+				"databaseName": "ClaimsSummaryDSQL"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
