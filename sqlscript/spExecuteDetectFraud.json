@@ -1,0 +1,17 @@
+{
+	"name": "spExecuteDetectFraud",
+	"properties": {
+		"content": {
+			"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [stage].[spExecuteDetectFraud] AS\nBEGIN\n\nTRUNCATE TABLE stage.ClaimsFraudSummarystage\n\nINSERT INTO stage.ClaimsFraudSummarystage\nSELECT *\nFROM PREDICT (MODEL = (SELECT [model] FROM dbo.[ClaimsMLModelExt] WHERE [ID] = 'sampesynapseworkspace-claimsfraudmldata-20210507054541-Best:1'),\n              DATA = [dbo].[ClaimsSummary],\n              RUNTIME = ONNX) WITH ([output_label1] [varchar])\n\nEND\n\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "ClaimsSummaryDSQL",
+				"databaseName": "ClaimsSummaryDSQL"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
