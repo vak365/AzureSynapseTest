@@ -59,10 +59,10 @@
 				"source": [
 					"%%spark\n",
 					"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\n",
-					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.dbo.ClaimsSummary\") \n",
+					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \n",
 					"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 				],
-				"execution_count": 3
+				"execution_count": 1
 			}
 		]
 	}
