@@ -28,7 +28,7 @@
 			"table": "ProcedureCodes"
 		},
 		"sqlPool": {
-			"referenceName": "SqlPoolTableSynapse",
+			"referenceName": "ClaimsSummaryDSQL",
 			"type": "SqlPoolReference"
 		}
 	},

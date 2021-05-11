@@ -48,7 +48,7 @@
 			"table": "DimHospitalDetails"
 		},
 		"sqlPool": {
-			"referenceName": "SqlPoolTableSynapse",
+			"referenceName": "ClaimsSummaryDSQL",
 			"type": "SqlPoolReference"
 		}
 	},

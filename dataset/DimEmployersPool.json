@@ -109,7 +109,7 @@
 			"table": "Employers"
 		},
 		"sqlPool": {
-			"referenceName": "SqlPoolTableSynapse",
+			"referenceName": "ClaimsSummaryDSQL",
 			"type": "SqlPoolReference"
 		}
 	},
