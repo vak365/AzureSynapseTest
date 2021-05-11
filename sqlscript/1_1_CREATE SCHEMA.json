@@ -1,0 +1,17 @@
+{
+	"name": "1_1_CREATE SCHEMA",
+	"properties": {
+		"content": {
+			"query": "CREATE SCHEMA load",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "ClaimsSummaryDSQL",
+				"databaseName": "ClaimsSummaryDSQL"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -56,7 +56,7 @@
 			"table": "Members"
 		},
 		"sqlPool": {
-			"referenceName": "SqlPoolTableSynapse",
+			"referenceName": "ClaimsSummaryDSQL",
 			"type": "SqlPoolReference"
 		}
 	},
