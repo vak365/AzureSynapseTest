@@ -158,7 +158,7 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"storedProcedureName": "updatelog",
+								"storedProcedureName": "dbo.updatelogtable",
 								"storedProcedureParameters": {
 									"jobName": {
 										"value": {

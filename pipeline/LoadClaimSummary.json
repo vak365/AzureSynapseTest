@@ -33,48 +33,48 @@
 						"mappings": [
 							{
 								"source": {
-									"name": "Claim FIR No",
+									"name": "ClaimFIRNo",
 									"type": "Int32",
 									"physicalType": "int"
 								},
 								"sink": {
-									"name": "Claim FIR No",
+									"name": "ClaimFIRNo",
 									"type": "Int32",
 									"physicalType": "int"
 								}
 							},
 							{
 								"source": {
-									"name": "Claim Type",
+									"name": "ClaimType",
 									"type": "String",
 									"physicalType": "varchar"
 								},
 								"sink": {
-									"name": "Claim Type",
+									"name": "ClaimType",
 									"type": "String",
 									"physicalType": "varchar"
 								}
 							},
 							{
 								"source": {
-									"name": "Hospitalization Type",
+									"name": "HospitalizationType",
 									"type": "String",
 									"physicalType": "varchar"
 								},
 								"sink": {
-									"name": "Hospitalization Type",
+									"name": "HospitalizationType",
 									"type": "String",
 									"physicalType": "varchar"
 								}
 							},
 							{
 								"source": {
-									"name": "Class_of_Accommodation",
+									"name": "ClassofAccommodation",
 									"type": "String",
 									"physicalType": "varchar"
 								},
 								"sink": {
-									"name": "Class_of_Accommodation",
+									"name": "ClassofAccommodation",
 									"type": "String",
 									"physicalType": "varchar"
 								}
@@ -110,19 +110,19 @@
 									"physicalType": "varchar"
 								},
 								"sink": {
-									"name": "policyNo",
+									"name": "PolicyNo",
 									"type": "String",
 									"physicalType": "varchar"
 								}
 							},
 							{
 								"source": {
-									"name": "Policy Type",
+									"name": "PolicyType",
 									"type": "String",
 									"physicalType": "varchar"
 								},
 								"sink": {
-									"name": "Policy Type",
+									"name": "PolicyType",
 									"type": "String",
 									"physicalType": "varchar"
 								}
@@ -189,18 +189,6 @@
 							},
 							{
 								"source": {
-									"name": "Provider Network Type",
-									"type": "String",
-									"physicalType": "varchar"
-								},
-								"sink": {
-									"name": "Provider Network Type",
-									"type": "String",
-									"physicalType": "varchar"
-								}
-							},
-							{
-								"source": {
 									"name": "Corporate",
 									"type": "String",
 									"physicalType": "varchar"
@@ -213,12 +201,12 @@
 							},
 							{
 								"source": {
-									"name": "Length of Stay",
+									"name": "LengthofStay",
 									"type": "Int32",
 									"physicalType": "int"
 								},
 								"sink": {
-									"name": "Length of Stay",
+									"name": "LengthofStay",
 									"type": "Int32",
 									"physicalType": "int"
 								}
@@ -231,32 +219,32 @@
 								},
 								"sink": {
 									"name": "IsFraudClaim",
-									"type": "String",
-									"physicalType": "varchar"
-								}
-							},
-							{
-								"source": {
-									"name": "Fraud Score",
-									"type": "Int32",
-									"physicalType": "int"
-								},
-								"sink": {
-									"name": "Fraud Score",
 									"type": "Int32",
 									"physicalType": "int"
 								}
 							},
 							{
 								"source": {
-									"name": "Claim Amount",
+									"name": "FraudScore",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "FraudScore",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "ClaimAmount",
 									"type": "Decimal",
 									"physicalType": "money",
 									"scale": 4,
 									"precision": 19
 								},
 								"sink": {
-									"name": "Claim Amount",
+									"name": "ClaimAmount",
 									"type": "Decimal",
 									"physicalType": "money",
 									"scale": 4,
@@ -265,12 +253,12 @@
 							},
 							{
 								"source": {
-									"name": "Claim Date",
+									"name": "ClaimDate",
 									"type": "DateTime",
 									"physicalType": "datetime"
 								},
 								"sink": {
-									"name": "Claim Date",
+									"name": "ClaimDate",
 									"type": "DateTime",
 									"physicalType": "datetime"
 								}
@@ -291,7 +279,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "claim_form_details",
+						"referenceName": "ClaimsSummary",
 						"type": "DatasetReference"
 					}
 				]

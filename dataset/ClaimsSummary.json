@@ -1,5 +1,5 @@
 {
-	"name": "claim_form_details",
+	"name": "ClaimsSummary",
 	"properties": {
 		"annotations": [],
 		"type": "SqlPoolTable",
