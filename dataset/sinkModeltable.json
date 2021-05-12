@@ -1,0 +1,16 @@
+{
+	"name": "sinkModeltable",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ClaimsMLModelExt"
+		},
+		"sqlPool": {
+			"referenceName": "ClaimsSummaryDSQL",
+			"type": "SqlPoolReference"
+		}
+	}
+}
