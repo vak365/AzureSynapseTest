@@ -42,8 +42,8 @@
 				},
 				"sparkVersion": "2.4",
 				"nodeCount": 10,
-				"cores": 4,
-				"memory": 28,
+				"cores": 8,
+				"memory": 56,
 				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
@@ -62,7 +62,7 @@
 					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \n",
 					"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 				],
-				"execution_count": 1
+				"execution_count": null
 			}
 		]
 	}
