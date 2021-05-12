@@ -42,8 +42,8 @@
 				},
 				"sparkVersion": "2.4",
 				"nodeCount": 10,
-				"cores": 4,
-				"memory": 28,
+				"cores": 8,
+				"memory": 56,
 				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
@@ -58,7 +58,53 @@
 					"from azureml.train.automl import AutoMLConfig\n",
 					"from azureml.data.dataset_factory import TabularDatasetFactory"
 				],
-				"execution_count": 1
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "scala"
+					},
+					"collapsed": true
+				},
+				"source": [
+					"%%spark\r\n",
+					"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\r\n",
+					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \r\n",
+					"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"import azureml.core\r\n",
+					"print(azureml.core.VERSION)\r\n",
+					""
+				],
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -71,7 +117,7 @@
 					"ws = Workspace(subscription_id = subscription_id, resource_group = resource_group, workspace_name = workspace_name)\n",
 					"experiment = Experiment(ws, experiment_name)"
 				],
-				"execution_count": 2
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -81,7 +127,7 @@
 					"datastore = Datastore.get_default(ws)\n",
 					"dataset = TabularDatasetFactory.register_spark_dataframe(df, datastore, name = experiment_name + \"-dataset\")"
 				],
-				"execution_count": 17
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -96,21 +142,21 @@
 					"                             max_concurrent_iterations = 2,\n",
 					"                             enable_onnx_compatible_models = True)"
 				],
-				"execution_count": 19
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"run = experiment.submit(automl_config)"
 				],
-				"execution_count": 20
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"displayHTML(\"<a href={} target='_blank'>Your experiment in Azure Machine Learning portal: {}</a>\".format(run.get_portal_url(), run.id))"
 				],
-				"execution_count": null
+				"execution_count": 36
 			},
 			{
 				"cell_type": "code",
@@ -171,7 +217,7 @@
 					"    # Register the model to AML model registry\n",
 					"    mlflow.register_model(\"runs:/\" + run.info.run_id + \"/\" + artifact_path, \"az-synapse-hack-ws-claimssummary-20210511090849-XGBoostClassifer\")"
 				],
-				"execution_count": null
+				"execution_count": 37
 			}
 		]
 	}
