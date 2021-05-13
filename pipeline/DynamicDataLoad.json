@@ -18,7 +18,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT * FROM dbo.ControlTable",
+							"value": "SELECT * FROM dbo.ControlTable Where IsActive =1 ",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
