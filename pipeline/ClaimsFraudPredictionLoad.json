@@ -53,7 +53,7 @@
 					"type": "SqlPoolReference"
 				},
 				"typeProperties": {
-					"storedProcedureName": "[stage].[spExecuteDetectFraud]"
+					"storedProcedureName": "[dbo].[spExecuteDetectFraud]"
 				}
 			},
 			{
