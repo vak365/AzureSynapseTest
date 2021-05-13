@@ -1,5 +1,5 @@
 {
-	"name": "11_FraudParameters",
+	"name": "FraudParameters",
 	"properties": {
 		"content": {
 			"query": "CREATE TABLE dbo.FraudParameters\n(\n\tFraudParameterId\t\tINT\t  IDENTITY(1,1)\n,\tFraudParameterCode\t\tVARCHAR(100) NOT NULL\n,\tFraudParameterDesc\t\tVARCHAR(200)\n,\tFraudScore\t\t\t\tINT\n,\tSeverity\t\t\t\tVARCHAR(50)\n,\tIsValid\t\t\t\t\tBIT\t\t\t\t\n,\tDateCreated\t\t\t\tDATETIME\t\t\n,\tDateModified\t\t\tDATETIME\t\t\n)\nWITH\n(\n    DISTRIBUTION = HASH (FraudParameterCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
