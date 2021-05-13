@@ -1,275 +1,270 @@
 {
-	"name": "dsExternalTPAsink",
+	"name": "ArchiveParquetFile",
 	"properties": {
+		"linkedServiceName": {
+			"referenceName": "az-synapse-hack-ws-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
-		"type": "SqlPoolTable",
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
+				"folderPath": "Archive",
+				"fileSystem": "azsynapsehackdlfs"
+			},
+			"compressionCodec": "snappy"
+		},
 		"schema": [
 			{
 				"name": "TPA_name",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "TPA_code",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "BILL_NO",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Modified Claim FIR No",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "SBU_Code",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Group name",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "POLICY_NO",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Product Type",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Client_code",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Policy_start_ date",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Policy_end_date",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Claim_type",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "INSURED_NAME",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Employee_name",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Employee_No",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Member_ID",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Age",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Consolidated Relation",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Provider name",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Provider code",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Payee address",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Payee City",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Payee State",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Date of last document received",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DOUBLE"
 			},
 			{
 				"name": "LOSS_DATE",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Date Of Discharge",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Disease Description",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Procedure Description",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Claimed Amount",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "NAME_PRINT_ON_CHECK",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "PAYMENT_MODE",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "PAYEE_ACCT",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "PAYEE_BANK_IFSC_CODE",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Delivery_to",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Payable location",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "LINE_AMOUNT",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Claim_amount_type",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Service_tax applicable",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "TDS applicable",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "TDS %",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "PAN NO",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Service_tax amount",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Service_tax Registration no",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Serive_tax invoice No",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Service_tax_invoice_date",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Payee Mail ID",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Payee Mobile No",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Claim status",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Status Code",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Claim Number",
-				"type": "varchar"
+				"type": "INT64"
 			},
 			{
 				"name": "Oracle Invoice number",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Error Description",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Date Created",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Date Modified",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Customer Payment Reference Number",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Transferred Date",
-				"type": "datetime",
-				"precision": 23,
-				"scale": 3
+				"type": "DATE"
 			},
 			{
 				"name": "Oracle TDS Amount",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Transferred Amount",
-				"type": "varchar"
+				"type": "DOUBLE"
 			},
 			{
 				"name": "Created By",
-				"type": "varchar"
+				"type": "UTF8"
 			},
 			{
 				"name": "Modified By",
-				"type": "varchar"
+				"type": "UTF8"
 			}
-		],
-		"typeProperties": {
-			"schema": "load",
-			"table": "ExternalTPAdata"
-		},
-		"sqlPool": {
-			"referenceName": "ClaimsSummaryDSQL",
-			"type": "SqlPoolReference"
-		}
+		]
 	}
 }
