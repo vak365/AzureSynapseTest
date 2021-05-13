@@ -1,8 +1,8 @@
 {
-	"name": "1_2_CREATE SCHEMA stage",
+	"name": "1_2_CREATE SCHEMA Report",
 	"properties": {
 		"content": {
-			"query": "CREATE SCHEMA stage",
+			"query": "CREATE SCHEMA Report",
 			"metadata": {
 				"language": "sql"
 			},

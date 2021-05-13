@@ -1,12 +1,12 @@
 {
-	"name": "DailySchedule",
+	"name": "ClaimLoadTrigger",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "DynamicDataLoad",
+					"referenceName": "ClaimsDataLoad",
 					"type": "PipelineReference"
 				}
 			}
@@ -16,7 +16,7 @@
 			"recurrence": {
 				"frequency": "Day",
 				"interval": 1,
-				"startTime": "2021-05-14T01:00:00Z",
+				"startTime": "2021-05-13T01:00:00Z",
 				"timeZone": "UTC"
 			}
 		}
