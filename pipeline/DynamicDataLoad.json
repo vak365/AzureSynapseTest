@@ -25,7 +25,7 @@
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "GetControlTable",
+						"referenceName": "DynamicStoredProceFromDatabase",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
