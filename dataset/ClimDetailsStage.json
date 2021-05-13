@@ -1,8 +1,16 @@
 {
 	"name": "ClimDetailsStage",
 	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServerSynapse",
+			"type": "LinkedServiceReference"
+		},
 		"annotations": [],
 		"type": "SqlServerTable",
-		"schema": []
+		"schema": [],
+		"typeProperties": {
+			"schema": "Load",
+			"table": "Log"
+		}
 	}
 }
