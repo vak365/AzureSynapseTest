@@ -1,8 +1,0 @@
-{
-	"name": "ClimDetailsStage",
-	"properties": {
-		"annotations": [],
-		"type": "SqlServerTable",
-		"schema": []
-	}
-}

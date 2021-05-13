@@ -1,8 +1,0 @@
-{
-	"name": "UpdateLogtable",
-	"properties": {
-		"annotations": [],
-		"type": "SqlServerTable",
-		"schema": []
-	}
-}

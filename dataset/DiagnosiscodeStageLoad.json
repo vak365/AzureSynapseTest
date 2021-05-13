@@ -1,8 +1,0 @@
-{
-	"name": "DiagnosiscodeStageLoad",
-	"properties": {
-		"annotations": [],
-		"type": "SqlServerTable",
-		"schema": []
-	}
-}
