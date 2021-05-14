@@ -1,0 +1,2272 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "az-synapse-hack-ws"
+		},
+		"OnPremFileLocation_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'OnPremFileLocation'"
+		},
+		"SqlServerSynapse_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlServerSynapse'"
+		},
+		"az-synapse-hack-ws-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'az-synapse-hack-ws-WorkspaceDefaultSqlServer'"
+		},
+		"OnPremFileLocation_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": " F:\\AzureSynapseHackathon\\ExternalTPA"
+		},
+		"OnPremFileLocation_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "ubtiinc\\ashwanthaj"
+		},
+		"az-synapse-hack-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azsynapsehackdl.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimFraudDetectionModel_Train')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "ClaimsFraudDetectionModel",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ClaimsFraudDetectionModel",
+								"type": "NotebookReference"
+							},
+							"snapshot": true
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/notebooks/ClaimsFraudDetectionModel')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsFraudPredictionLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "InsClaimsSummary",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "FAMS Trigger",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "ClaimsSummaryDSQL",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[dbo].[InsClaimsSummary]"
+						}
+					},
+					{
+						"name": "spExecuteDetectFraud",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "InsClaimsSummary",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "ClaimsSummaryDSQL",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[dbo].[spExecuteDetectFraud]"
+						}
+					},
+					{
+						"name": "FAMS Trigger",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "ClaimsSummaryDSQL",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[dbo].[FAMSTrigger_Execute]"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-05-06T10:43:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/ClaimsSummaryDSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ArchiveParquetFile')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "az-synapse-hack-ws-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"folderPath": "Archive",
+						"fileSystem": "azsynapsehackdlfs"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "TPA_name",
+						"type": "UTF8"
+					},
+					{
+						"name": "TPA_code",
+						"type": "INT64"
+					},
+					{
+						"name": "BILL_NO",
+						"type": "UTF8"
+					},
+					{
+						"name": "Modified Claim FIR No",
+						"type": "UTF8"
+					},
+					{
+						"name": "SBU_Code",
+						"type": "INT64"
+					},
+					{
+						"name": "Group name",
+						"type": "UTF8"
+					},
+					{
+						"name": "POLICY_NO",
+						"type": "INT64"
+					},
+					{
+						"name": "Product Type",
+						"type": "UTF8"
+					},
+					{
+						"name": "Client_code",
+						"type": "INT64"
+					},
+					{
+						"name": "Policy_start_ date",
+						"type": "DATE"
+					},
+					{
+						"name": "Policy_end_date",
+						"type": "DATE"
+					},
+					{
+						"name": "Claim_type",
+						"type": "UTF8"
+					},
+					{
+						"name": "INSURED_NAME",
+						"type": "UTF8"
+					},
+					{
+						"name": "Employee_name",
+						"type": "UTF8"
+					},
+					{
+						"name": "Employee_No",
+						"type": "UTF8"
+					},
+					{
+						"name": "Member_ID",
+						"type": "UTF8"
+					},
+					{
+						"name": "Age",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Consolidated Relation",
+						"type": "UTF8"
+					},
+					{
+						"name": "Provider name",
+						"type": "UTF8"
+					},
+					{
+						"name": "Provider code",
+						"type": "UTF8"
+					},
+					{
+						"name": "Payee address",
+						"type": "UTF8"
+					},
+					{
+						"name": "Payee City",
+						"type": "UTF8"
+					},
+					{
+						"name": "Payee State",
+						"type": "UTF8"
+					},
+					{
+						"name": "Date of last document received",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "LOSS_DATE",
+						"type": "DATE"
+					},
+					{
+						"name": "Date Of Discharge",
+						"type": "DATE"
+					},
+					{
+						"name": "Disease Description",
+						"type": "UTF8"
+					},
+					{
+						"name": "Procedure Description",
+						"type": "UTF8"
+					},
+					{
+						"name": "Claimed Amount",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "NAME_PRINT_ON_CHECK",
+						"type": "UTF8"
+					},
+					{
+						"name": "PAYMENT_MODE",
+						"type": "UTF8"
+					},
+					{
+						"name": "PAYEE_ACCT",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "PAYEE_BANK_IFSC_CODE",
+						"type": "UTF8"
+					},
+					{
+						"name": "Delivery_to",
+						"type": "UTF8"
+					},
+					{
+						"name": "Payable location",
+						"type": "UTF8"
+					},
+					{
+						"name": "LINE_AMOUNT",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Claim_amount_type",
+						"type": "INT64"
+					},
+					{
+						"name": "Service_tax applicable",
+						"type": "UTF8"
+					},
+					{
+						"name": "TDS applicable",
+						"type": "UTF8"
+					},
+					{
+						"name": "TDS %",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "PAN NO",
+						"type": "UTF8"
+					},
+					{
+						"name": "Service_tax amount",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Service_tax Registration no",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Serive_tax invoice No",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Service_tax_invoice_date",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Payee Mail ID",
+						"type": "UTF8"
+					},
+					{
+						"name": "Payee Mobile No",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Claim status",
+						"type": "UTF8"
+					},
+					{
+						"name": "Status Code",
+						"type": "INT64"
+					},
+					{
+						"name": "Claim Number",
+						"type": "INT64"
+					},
+					{
+						"name": "Oracle Invoice number",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Error Description",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Date Created",
+						"type": "DATE"
+					},
+					{
+						"name": "Date Modified",
+						"type": "DATE"
+					},
+					{
+						"name": "Customer Payment Reference Number",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Transferred Date",
+						"type": "DATE"
+					},
+					{
+						"name": "Oracle TDS Amount",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Transferred Amount",
+						"type": "DOUBLE"
+					},
+					{
+						"name": "Created By",
+						"type": "UTF8"
+					},
+					{
+						"name": "Modified By",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/az-synapse-hack-ws-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsSummary')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ClaimsSummary"
+				},
+				"sqlPool": {
+					"referenceName": "ClaimsSummaryDSQL",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/ClaimsSummaryDSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DynamicStageLoadTableFromPool')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "load",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				},
+				"sqlPool": {
+					"referenceName": "ClaimsSummaryDSQL",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/ClaimsSummaryDSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/claim_form_details')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServerSynapse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "Log_Detail_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LogId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompletedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "Load",
+					"table": "LogDetails"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/SqlServerSynapse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dsExternalParquetfile')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "OnPremFileLocation",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "ExternalTPA.parquet"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/OnPremFileLocation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dsExternalTPAsink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "TPA_name",
+						"type": "varchar"
+					},
+					{
+						"name": "TPA_code",
+						"type": "varchar"
+					},
+					{
+						"name": "BILL_NO",
+						"type": "varchar"
+					},
+					{
+						"name": "Modified Claim FIR No",
+						"type": "varchar"
+					},
+					{
+						"name": "SBU_Code",
+						"type": "varchar"
+					},
+					{
+						"name": "Group name",
+						"type": "varchar"
+					},
+					{
+						"name": "POLICY_NO",
+						"type": "varchar"
+					},
+					{
+						"name": "Product Type",
+						"type": "varchar"
+					},
+					{
+						"name": "Client_code",
+						"type": "varchar"
+					},
+					{
+						"name": "Policy_start_ date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Policy_end_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Claim_type",
+						"type": "varchar"
+					},
+					{
+						"name": "INSURED_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "Employee_name",
+						"type": "varchar"
+					},
+					{
+						"name": "Employee_No",
+						"type": "varchar"
+					},
+					{
+						"name": "Member_ID",
+						"type": "varchar"
+					},
+					{
+						"name": "Age",
+						"type": "varchar"
+					},
+					{
+						"name": "Consolidated Relation",
+						"type": "varchar"
+					},
+					{
+						"name": "Provider name",
+						"type": "varchar"
+					},
+					{
+						"name": "Provider code",
+						"type": "varchar"
+					},
+					{
+						"name": "Payee address",
+						"type": "varchar"
+					},
+					{
+						"name": "Payee City",
+						"type": "varchar"
+					},
+					{
+						"name": "Payee State",
+						"type": "varchar"
+					},
+					{
+						"name": "Date of last document received",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "LOSS_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Date Of Discharge",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Disease Description",
+						"type": "varchar"
+					},
+					{
+						"name": "Procedure Description",
+						"type": "varchar"
+					},
+					{
+						"name": "Claimed Amount",
+						"type": "varchar"
+					},
+					{
+						"name": "NAME_PRINT_ON_CHECK",
+						"type": "varchar"
+					},
+					{
+						"name": "PAYMENT_MODE",
+						"type": "varchar"
+					},
+					{
+						"name": "PAYEE_ACCT",
+						"type": "varchar"
+					},
+					{
+						"name": "PAYEE_BANK_IFSC_CODE",
+						"type": "varchar"
+					},
+					{
+						"name": "Delivery_to",
+						"type": "varchar"
+					},
+					{
+						"name": "Payable location",
+						"type": "varchar"
+					},
+					{
+						"name": "LINE_AMOUNT",
+						"type": "varchar"
+					},
+					{
+						"name": "Claim_amount_type",
+						"type": "varchar"
+					},
+					{
+						"name": "Service_tax applicable",
+						"type": "varchar"
+					},
+					{
+						"name": "TDS applicable",
+						"type": "varchar"
+					},
+					{
+						"name": "TDS %",
+						"type": "varchar"
+					},
+					{
+						"name": "PAN NO",
+						"type": "varchar"
+					},
+					{
+						"name": "Service_tax amount",
+						"type": "varchar"
+					},
+					{
+						"name": "Service_tax Registration no",
+						"type": "varchar"
+					},
+					{
+						"name": "Serive_tax invoice No",
+						"type": "varchar"
+					},
+					{
+						"name": "Service_tax_invoice_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Payee Mail ID",
+						"type": "varchar"
+					},
+					{
+						"name": "Payee Mobile No",
+						"type": "varchar"
+					},
+					{
+						"name": "Claim status",
+						"type": "varchar"
+					},
+					{
+						"name": "Status Code",
+						"type": "varchar"
+					},
+					{
+						"name": "Claim Number",
+						"type": "varchar"
+					},
+					{
+						"name": "Oracle Invoice number",
+						"type": "varchar"
+					},
+					{
+						"name": "Error Description",
+						"type": "varchar"
+					},
+					{
+						"name": "Date Created",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Date Modified",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Customer Payment Reference Number",
+						"type": "varchar"
+					},
+					{
+						"name": "Transferred Date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "Oracle TDS Amount",
+						"type": "varchar"
+					},
+					{
+						"name": "Transferred Amount",
+						"type": "varchar"
+					},
+					{
+						"name": "Created By",
+						"type": "varchar"
+					},
+					{
+						"name": "Modified By",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "load",
+					"table": "ExternalTPAdata"
+				},
+				"sqlPool": {
+					"referenceName": "ClaimsSummaryDSQL",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/ClaimsSummaryDSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dsParquetstoragelocation')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "az-synapse-hack-ws-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "ExternalTPA.parquet",
+						"folderPath": "Input",
+						"fileSystem": "azsynapsehackdlfs"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/az-synapse-hack-ws-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimFraudReportsWs')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "PowerBIWorkspace",
+				"typeProperties": {
+					"workspaceID": "3b8b229d-892e-406a-866a-c3014791d1e9",
+					"tenantID": "fda2467e-a26d-4573-aabf-26418967452d"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/OnPremFileLocation')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('OnPremFileLocation_properties_typeProperties_host')]",
+					"userId": "[parameters('OnPremFileLocation_properties_typeProperties_userId')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('OnPremFileLocation_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntimeselfhosted",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/IntegrationRuntimeselfhosted')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SqlServerSynapse')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlServerSynapse_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "IntegrationRuntimeselfhosted",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/IntegrationRuntimeselfhosted')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/az-synapse-hack-ws-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('az-synapse-hack-ws-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/az-synapse-hack-ws-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('az-synapse-hack-ws-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimLoadTrigger')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-05-13T01:00:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/IntegrationRuntimeselfhosted')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "IntegrationRuntimeselfhosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/10_FAMS_AverageLOS')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE PROC [dbo].[FAMS_AverageLOS]\nAS BEGIN\n\n\tDECLARE\n\t\t@FraudParameterId\tINT\n\t,\t@FraudScore\t\t\tINT\n\n\tSELECT \n\t\t@FraudParameterId = F.FraudParameterId\n\t,\t@FraudScore = F.FraudScore\n\n\tFROM FraudParameters F WHERE F.FraudParameterCode =  'Average LOS >= 4 days'\n\n\tCREATE TABLE #Temp\n\t(\n\t\tClaimFormDetailId\tINT\n\t,\tHospitalId\t\t\tINT\n\t,\tHospitalName\t\tVARCHAR(150)\n\t,\tDateAdmit\t\t\tDATETIME\n\t,\tDateDischarge\t\tDATETIME\n\t,\tLengthofStay\t\tDECIMAL(19,2)\n\t)\n\n\tINSERT INTO #Temp \n\tSELECT \n\t\tC.claim_form_detail_id\n\t,\tP.provider_id\n\t,\tP.last_name\n\t,\tC.date_of_Admit\n\t,\tC.date_of_Discharge\n\t,\tDATEDIFF(Day,C.date_of_Admit,C.date_of_Discharge) AS LengthofStay\n\n\tFROM claim_form_details C\n\tINNER JOIN providers P ON C.hosp_id = P.provider_id\n\tWHERE\n\t\tISNULL(C.parent_claim_form_id,0) <> 0\n\n\t\tDELETE L FROM dbo.LnkClaimFraudParameter L WHERE L.FraudParameterId = @FraudParameterId\n\n\t\tINSERT INTO dbo.LnkClaimFraudParameter\n\t\t(\n\t\t\tClaimFormDetailId\n\t\t,\tFraudParameterId\n\t\t,\tFraudScore\n\t\t)\n\t\tSELECT \n\t\t\tT.ClaimFormDetailId \n\t\t,\t@FraudParameterId\n\t\t,\t@FraudScore\n\n\t\tFROM #Temp T \n\t\tINNER JOIN \n\t\t(\n\t\t\tSELECT T.HospitalId  \n\t\t\tFROM #Temp T\t\t\t\n\t\t\tGROUP BY\n\t\t\t\tT.HospitalId\n\t\t\tHAVING \n\t\t\t\tAVG(T.lengthofStay) >= 4\n\t\t) AS B ON T.HospitalId = B.HospitalId\n\n\t\tDROP TABLE #Temp\n\n\t\tEND",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/12_load_ClaimsSummary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\nCREATE TABLE [load].[ClaimsSummary](\n\t[ClaimFIRNo] [int] NULL,\n\t[ClaimType] [varchar](13) NOT NULL,\n\t[HospitalizationType] [varchar](10) NULL,\n\t[ClassofAccommodation] [varchar](50) NULL,\n\t[Procedure] [varchar](500) NULL,\n\t[Diagnosis] [varchar](250) NULL,\n\t[PolicyNo] [varchar](100) NULL,\n\t[PolicyType] [varchar](17) NOT NULL,\n\t[member_code] [varchar](25) NULL,\n\t[FullMemberName] [varchar](200) NULL,\n\t[Gender] [varchar](6) NOT NULL,\n\t[Age] [int] NULL,\n\t[Hospital] [varchar](100) NULL,\n\t[Corporate] [varchar](100) NULL,\n\t[LengthofStay] [int] NULL,\n\t[IsFraudClaim] [int] NOT NULL,\n\t[FraudScore] [int] NULL,\n\t[ClaimAmount] [money] NULL,\n\t[ClaimDate] [datetime] NULL\n) \nGO\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/19_ClaimsSummary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[ClaimsSummary]\n( \n\t[ClaimFIRNo] [varchar](30)  NULL,\n\t[ClaimType] [varchar](13)  NOT NULL,\n\t[HospitalizationType] [varchar](10)  NULL,\n\t[ClassofAccommodation] [varchar](50)  NULL,\n\t[Procedure] [varchar](500)  NULL,\n\t[Diagnosis] [varchar](250)  NULL,\n\t[PolicyNo] [varchar](100)  NULL,\n\t[PolicyType] [varchar](17)  NOT NULL,\n\t[member_code] [varchar](25)  NULL,\n\t[FullMemberName] [varchar](200)  NULL,\n\t[Gender] [varchar](6)  NOT NULL,\n\t[Age] [varchar](30)  NULL,\n\t[Hospital] [varchar](100)  NULL,\n\t[Corporate] [varchar](100)  NULL,\n\t[LengthofStay] [varchar](30)  NULL,\n\t[IsFraudClaim] [varchar](30)  NOT NULL,\n\t[FraudScore] [varchar](30)  NULL,\n\t[ClaimAmount] [varchar](30)  NULL,\n\t[ClaimDate] [varchar](30)  NULL\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/1_1_CREATE SCHEMA')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE SCHEMA load",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/1_2_CREATE SCHEMA Report')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE SCHEMA Report",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/1_MasterKeySetup')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '{Password}'",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/2_AzureStorageAccountKey')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE DATABASE SCOPED CREDENTIAL AzureStorageAccountKey\nWITH IDENTITY = 'azsynapsehackdl'\n    ,SECRET = 'xZXpI0yaSYwJBLEI4ZXkGDaBq+SPaFUegCw22tHqVqPFbYmaChyWQaEolwNeufRjPN2Op3oZP7jNJeFrkhEsyQ=='\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/3_ExternalTPAdata')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\nCreate table [load].[ExternalTPAdata]\n(\n [TPA_name] varchar(1000)\n,[TPA_code] varchar(1000)\n,[BILL_NO] varchar(1000)\n,[Modified Claim FIR No] varchar(1000)\n,[SBU_Code] varchar(1000)\n,[Group name] varchar(1000)\n,[POLICY_NO] varchar(1000)\n,[Product Type] varchar(1000)\n,[Client_code] varchar(1000)\n,[Policy_start_ date] DateTime\n,[Policy_end_date] DateTime\n,[Claim_type] varchar(1000)\n,[INSURED_NAME] varchar(1000)\n,[Employee_name] varchar(1000)\n,[Employee_No] varchar(1000)\n,[Member_ID] varchar(1000)\n,[Age] varchar(1000)\n,[Consolidated Relation] varchar(1000)\n,[Provider name] varchar(1000)\n,[Provider code] varchar(1000)\n,[Payee address] varchar(1000)\n,[Payee City] varchar(1000)\n,[Payee State] varchar(1000)\n,[Date of last document received] DateTime\n,[LOSS_DATE] DateTime\n,[Date Of Discharge] DateTime\n,[Disease Description] varchar(1000)\n,[Procedure Description] varchar(1000)\n,[Claimed Amount] varchar(1000)\n,[NAME_PRINT_ON_CHECK] varchar(1000)\n,[PAYMENT_MODE] varchar(1000)\n,[PAYEE_ACCT] varchar(1000)\n,[PAYEE_BANK_IFSC_CODE] varchar(1000)\n,[Delivery_to] varchar(1000)\n,[Payable location] varchar(1000)\n,[LINE_AMOUNT] varchar(1000)\n,[Claim_amount_type] varchar(1000)\n,[Service_tax applicable] varchar(1000)\n,[TDS applicable] varchar(1000)\n,[TDS %] varchar(1000)\n,[PAN NO] varchar(1000)\n,[Service_tax amount] varchar(1000)\n,[Service_tax Registration no] varchar(1000)\n,[Serive_tax invoice No] varchar(1000)\n,[Service_tax_invoice_date] DateTime\n,[Payee Mail ID] varchar(1000)\n,[Payee Mobile No] varchar(1000)\n,[Claim status] varchar(1000)\n,[Status Code] varchar(1000)\n,[Claim Number] varchar(1000)\n,[Oracle Invoice number] varchar(1000)\n,[Error Description] varchar(1000)\n,[Date Created] DateTime\n,[Date Modified] DateTime\n,[Customer Payment Reference Number] varchar(1000)\n,[Transferred Date] DateTime\n,[Oracle TDS Amount] varchar(1000)\n,[Transferred Amount] varchar(1000)\n,[Created By] varchar(1000)\n,[Modified By] varchar(1000)\n)\nWITH\n(\n    DISTRIBUTION = HASH (TPA_name),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/4_DimEmployers')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimEmployers]\n(\n    EmployerId  INT NOT NULL\n,\tEmployerCode\tVARCHAR(15) NULL\n,\tEmployerName\tVARCHAR(100) NULL\n,\tEmployerDetailid   INT NULL\n,\tEmpCity\tVARCHAR(50) NULL\n,\tEmpState\tVARCHAR(20) NULL\n,\tEmpZipcode\tVARCHAR(9) NULL\n,\tEmpEmail\tVARCHAR(250) NULL\n,\tPremiumNet\tMoney NULL\n,\tPremiumGross\t[decimal](18, 0) NULL\n,\tPremiumtax [decimal](18, 0) NULL\n,\tNoOfLives [decimal](18, 0) NULL\n,\tpolicyFromDate DateTime NULL\n,\tpolicyToDate\tDateTime NULL\n,\tAgent VARCHAR(255) NULL\n,\tPolicyNo VARCHAR(255) NULL\n,\tPolicyId  INT NULL\n,\tBankName VARCHAR(250)\t NULL\n,\tBankAccNo VARCHAR(100) NULL\n,\tBankCity  VARCHAR(100) NULL\n,\tBankState  VARCHAR(100) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (EmployerId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/5_DimHospitalDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimHospitalDetails]\n(\n     HospitalId INT NOT NULL\n,\t HospitalCode VARCHAR(30)\n,\t HospitalName VARCHAR(100)\n,\t IsSpecialist BIT\n,\t IsReferringProvider BIT\n,\t ProviderTypeId INT\n,\t ProviderCity VARCHAR(50)\n,\t ProviderState VARCHAR(100)\n,\t ProviderCountry VARCHAR(100)\n)\nWITH\n(\n    DISTRIBUTION = HASH (HospitalId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/6_DimMemberDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimMemberDetails]\n(\n    member_detail_id int NOT NULL \n,\tmember_id\tINT\n,\tstart_effective_date\tDateTime\n,\tend_effective_date\tDateTime\n,\tlocation_id\tINT\n,\temployer_id\tINT\n,\tproduct_type_id\tINT\n,\tcity\tVARCHAR(150)\n,\tstate\t\tVARCHAR(20)\n,\tzip_code\t\tVARCHAR(50)\n,\temail\t\t\tVARCHAR(50)\n,\tMobileNo\tVARCHAR(20)\n,\tPanNo\tVARCHAR(100)\n,\tDrivingNo VARCHAR(100)\t\n,\tVoterID\tVARCHAR(100)\t\n,\tRation_Card\tVARCHAR(100)\t\n,\tmember_code_tmp\tVARCHAR(20)\t\n,\tis_missing\tINT\n,\tAccountNo\tVARCHAR(50)\n,\tBank_Name\tVARCHAR(50)\n,\tBank_Branch\tVARCHAR(50)\n,\tBranch_Code\tVARCHAR(50)\n,\tDesignation\tVARCHAR(50)\n,\tDepartment\tVARCHAR(50)\n,\tPolicytype\tVARCHAR(100)\t\n,\tProductID INT\t\n,\tpolicyNo\tVARCHAR(100)\n,\tSumInsured\t[numeric](18, 2)\n,\tCummulative\t[numeric](18, 2)\n,\tPremium\t[numeric](18, 2)\n,\tRenewal\tVARCHAR(50)\n,\tSubscriber_Detail_id\tINT\n,\tRelationshipID\tINT\n,\tPlan_id\tINT\n,\tSumInsuredper\tVARCHAR(100)\n,\tCardPer\tVARCHAR(100)\n,\tEmployee_No\tVARCHAR(50)\n,\tBloodgroup\tVARCHAR(50)\n,\tSalaryGrade\tVARCHAR(50)\n,\tCoInsurance\tVARCHAR(100)\n,\tagentcode\tVARCHAR(150)\n,\tmember_insurer_id\tINT\n,\tcountry\tVARCHAR(50)\n,\tdistrict VARCHAR(100)\t\n,\tworkflow_current_sequence_id\tINT\n,\tpolicy_from_date\tDateTime\n,\tpolicy_to_date\tDateTime\n,\tContract_Id\tINT\n,\tDateCreated\tDateTime\n,\tcovered_from_date\tDateTime\n,\tEnd_Ren_Date\tDateTime\n,\tendorsement_no\tVARCHAR(100)\n,\tEndorsement_Date\tDateTime\n,\tParent_Member_detail_id\tINT\n,\tMemberCreatedDate\tDateTime\n,\tModifiedDate\tDateTime\n)\nWITH\n(\n    DISTRIBUTION = HASH (member_detail_id),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/7_DimMembers')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimMembers]\n(\n    member_id INT NOT NULL\n,\tmember_code VARCHAR(25)\n,\tfirst_name VARCHAR(150)\n,\tlast_name VARCHAR(30)\n,\tdate_birth DATETIME\n,\tsex VARCHAR(20)\n,\tsubscriber_id numeric(10,0)\n,\tuser_id INT\n,\tFullMemberName VARCHAR(200)\n,\tSequenceNo VARCHAR(100)\n)\nWITH\n(\n    DISTRIBUTION = HASH (member_id),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/8_DimProcedureCategories')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimProcedureCategories]\n(\n    ProcedureCategoryId INT NOT NULL\n,\tProcedureCategoryCode VARCHAR(10)\n,\tProcedureCategoryDesc VARCHAR(150)\n)\nWITH\n(\n    DISTRIBUTION = HASH (ProcedureCategoryId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/9_FactClaimDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[FactClaimDetails]\n(\n    \tClaimFIRNo\tVARCHAR(50)\n\t,\tInjury\tVARCHAR(100)\n\t,\tClaimType\tBIT\n\t,\tClaimCategory\tVARCHAR(10)\n\t,\tAmountBilled\tmoney\n\t,\tAmountNet\tmoney\n\t,\tAmountPaid\tmoney\n\t,\tDoctorName\tVARCHAR(50)\n\t,\tDoctorCity\tVARCHAR(50)\n\t,\tClaimFormDetailId\tINT\n\t,\tIntimationId\tINT\n\t,\tHospitalId\tINT\n\t,\tClaimStatusId\tINT\n\t,\tPlaceofServiceId\tINT\n\t,\tDateofService\tDateTime\n\t,\tDatePaid\tDateTime\n\t,\tDateReceived\tDateTime\n\t,\tDateofAdmit\tDateTime\n\t,\tDateofInjury\tDateTime\n\t,\tDateofDocumentation\tDateTime\n\t,\tDateofDischarge\tDateTime\n\t,\tDateModified\tDateTime\n\t,\tWorkflowSequenceId\tINT\n\t,\tMemberDetailId\tINT\n\t,\tClassofAccommodation\tVARCHAR(50)\n\t,\tHospitalizationType\tVARCHAR(50)\n\t,\tCorporate\tVARCHAR(100)\n\t,\tClaimId\tINT \n)\nWITH\n(\n    DISTRIBUTION = HASH (ClaimId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsFraudSummaryData')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [Report].[ClaimsFraudSummaryData]\n( \n\t[ClaimFIRNo] [varchar](20)  NULL,\n\t[ClaimType] [varchar](13)  NULL,\n\t[HospitalizationType] [varchar](10)  NULL,\n\t[Class_of_Accommodation] [varchar](50)  NULL,\n\t[Procedure] [varchar](500)  NULL,\n\t[Diagnosis] [varchar](250)  NULL,\n\t[policyNo] [varchar](100)  NULL,\n\t[PolicyType] [varchar](17)  NULL,\n\t[member_code] [varchar](25)  NULL,\n\t[FullMemberName] [varchar](200)  NULL,\n\t[Gender] [varchar](6)  NULL,\n\t[Age] [varchar](20)  NULL,\n\t[Hospital] [varchar](100)  NULL,\n\t[Corporate] [varchar](100)  NULL,\n\t[LengthofStay] [varchar](5)  NULL,\n\t[IsFraudClaim] [varchar](1)  NULL,\n\t[FraudScore] [varchar](10)  NULL,\n\t[ClaimAmount] [varchar](20)  NULL,\n\t[ClaimDate] [varchar](20)  NULL\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsMLModelExt')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[ClaimsMLModelExt]\n( \n\t[ID] [nvarchar](1024)  NOT NULL,\n\t[name] [nvarchar](1024)  NOT NULL,\n\t[description] [nvarchar](1024)  NULL,\n\t[version] [int]  NULL,\n\t[created_time] [datetime2](7)  NULL,\n\t[created_by] [nvarchar](128)  NULL,\n\t[framework] [nvarchar](64)  NULL,\n\t[model] [varbinary](max)  NULL,\n\t[inputs_schema] [nvarchar](max)  NULL,\n\t[outputs_schema] [nvarchar](max)  NULL\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tHEAP\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DimEmployers')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DimHospitalDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DimMemberDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DimMembers')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DimProcedureCategories')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DynamicStageLoadTableFromPool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FAMS_AverageLOS')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[FAMS_AverageLOS] AS BEGIN\n\n\tDECLARE\n\t\t@FraudParameterId\tINT\n\t,\t@FraudScore\t\t\tINT\n\n\tSELECT \n\t\t@FraudParameterId = F.FraudParameterId\n\t,\t@FraudScore = F.FraudScore\n\n\tFROM FraudParameters F WHERE F.FraudParameterCode =  'Avg LOS >= 4 days'\n\n\tCREATE TABLE #Temp\n\t(\n\t\tClaimFormDetailId\tINT\n\t,\tHospitalId\t\t\tINT\n\t,\tHospitalName\t\tVARCHAR(150)\n\t,\tDateAdmit\t\t\tDATETIME\n\t,\tDateDischarge\t\tDATETIME\n\t,\tLengthofStay\t\tDECIMAL(19,2)\n\t)\n\n\tINSERT INTO #Temp \n\tSELECT \n\t\tC.ClaimFormDetailId\n\t,\tP.HospitalId\n\t,\tP.HospitalName\n\t,\tC.DateofAdmit\n\t,\tC.DateofDischarge\n\t,\tDATEDIFF(Day,C.DateofAdmit,C.DateofDischarge) AS LengthofStay\n\n\tFROM FactClaimDetails C\n\tINNER JOIN DimHospitalDetails P ON C.HospitalId = P.HospitalId\n\t \n\t\tDELETE L FROM dbo.LnkClaimFraudParameter L WHERE L.FraudParameterId = @FraudParameterId\n\n\t\tINSERT INTO dbo.LnkClaimFraudParameter\n\t\t(\n\t\t\tClaimFormDetailId\n\t\t,\tFraudParameterId\n\t\t,\tFraudScore\n\t\t)\n\t\tSELECT \n\t\t\tT.ClaimFormDetailId \n\t\t,\t@FraudParameterId\n\t\t,\t@FraudScore\n\n\t\tFROM #Temp T \n\t\tINNER JOIN \n\t\t(\n\t\t\tSELECT T.HospitalId  \n\t\t\tFROM #Temp T\t\t\t\n\t\t\tGROUP BY\n\t\t\t\tT.HospitalId\n\t\t\tHAVING \n\t\t\t\tAVG(T.lengthofStay) >= 4\n\t\t) AS B ON T.HospitalId = B.HospitalId\n\n\t\tDROP TABLE #Temp\n\n\t\tEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FAMS_GroupPolicyGreaterThan10Percent')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[FAMS_GroupPolicyGreaterThan10Percent] AS BEGIN\n\n\tDECLARE\n\t\t@FraudParameterId\tINT\n\t,\t@FraudScore\t\t\tINT\n\n\tSELECT \n\t\t@FraudParameterId = F.FraudParameterId\n\t,\t@FraudScore = F.FraudScore\n\n\tFROM FraudParameters F WHERE F.FraudParameterCode =  'Group policy Claims is more than 10%'\n \n\tCREATE TABLE #GroupHospitalClaims\n\t(\n\t\tEmployerId\t\t\tINT\n\t,\tHospitalId\t\t\tINT\n\t,\tNoofClaim\t\t\tINT\n\t,\tTotalNoofClaims\t\tINT\n\t,\tClaimsPercent\t\tDECIMAL(19,2)\n\t)\n\n\tINSERT INTO #GroupHospitalClaims (EmployerId, HospitalId, NoofClaim)\n\tSELECT \n\t\tE.employerid\n\t,\tP.HospitalId\n\t,\tCOUNT(C.claimformdetailid)\n\n\tFROM FactClaimDetails C\n\tINNER JOIN DimMemberDetails MD ON MD.member_detail_id = C.memberdetailid\n\tINNER JOIN DimEmployers E ON E.employerid = MD.employer_id \n\tINNER JOIN DimHospitalDetails P ON C.HospitalId = P.HospitalId\t \t\t\n\tWHERE\n\t\tISNULL(MD.Employer_Id,0) <> 0 \n\tGROUP BY\n\t\tE.employerid\n\t,\tP.HospitalId\n \n\n\tUPDATE G\n\tSET G.TotalNoofClaims = A.TotalNoofClaims\n\tFROM #GroupHospitalClaims G\n\tINNER JOIN \n\t(\n\tSELECT G.employerid, SUM(G.NoofClaim) As TotalNoofClaims \n\tFROM #GroupHospitalClaims G \n\tGROUP BY\n\t\tG.employerid\n\t)AS A ON A.EmployeriD = G.EmployerID\n\n\tUPDATE G\n\tSET G.ClaimsPercent = (CONVERT(DECIMAL(19,2),G.Noofclaim)/CONVERT(DECIMAL(19,2),G.TotalNoofClaims))*100 \n\tFROM #GroupHospitalClaims G\n\n\tDELETE L FROM dbo.LnkClaimFraudParameter L WHERE L.FraudParameterId = @FraudParameterId\n\n\tINSERT INTO dbo.LnkClaimFraudParameter\n\t(\n\t\tClaimFormDetailId\n\t,\tFraudParameterId\n\t,\tFraudScore\n\t)\n\tSELECT \n\t\tC.Claimformdetailid \n\t,\t@FraudParameterId\n\t,\t@FraudScore\n\n\tFROM FactClaimDetails C \n\tINNER JOIN DimMemberDetails MD ON MD.member_detail_id = C.memberdetailid\n\tINNER JOIN DimEmployers E ON E.employerid = MD.employer_id \n\tINNER JOIN DimHospitalDetails P ON C.HospitalId = P.HospitalId\n\tINNER JOIN #GroupHospitalClaims G ON G.HospitalId = P.Hospitalid AND  G.EmployerID = MD.Employer_Id\n\tWHERE \n\t\tG.ClaimsPercent >= 10\n\t\t \n\t\t \n\tDROP TABLE #GroupHospitalClaims\n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FactClaimDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FraudParameters')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE dbo.FraudParameters\n(\n\tFraudParameterId\t\tINT\t  IDENTITY(1,1)\n,\tFraudParameterCode\t\tVARCHAR(100) NOT NULL\n,\tFraudParameterDesc\t\tVARCHAR(200)\n,\tFraudScore\t\t\t\tINT\n,\tSeverity\t\t\t\tVARCHAR(50)\n,\tIsValid\t\t\t\t\tBIT\t\t\t\t\n,\tDateCreated\t\t\t\tDATETIME\t\t\n,\tDateModified\t\t\tDATETIME\t\t\n)\nWITH\n(\n    DISTRIBUTION = HASH (FraudParameterCode),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/InsClaimsSummary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nALTER PROC [dbo].[InsClaimsSummary] AS\nBEGIN\n\n\n    DELETE CS FROM load.ClaimsSummary CS\n\n\n    INSERT INTO load.ClaimsSummary\n    (\n    \t[ClaimFIRNo]\n    ,\t[ClaimType]\n    ,\t[HospitalizationType]\n    ,\t[ClassofAccommodation]\n    ,\t[Procedure]\n    ,\t[Diagnosis]\n    ,\t[PolicyNo]\n    ,\t[PolicyType]\n    ,   [member_code]\n    ,\t[FullMemberName]\n    ,\t[Gender]\n    ,\t[Age]\n    ,\t[Hospital]\n    ,\t[Corporate]\n    ,\t[LengthofStay]\n    ,\t[IsFraudClaim]\n    ,\t[FraudScore]\n    ,\t[ClaimAmount]\n    ,\t[ClaimDate]\n    )\n    SELECT \n        C.ClaimFormDetailId AS 'Claim FIR No'\n    ,   CASE \n            WHEN C.ClaimType = 0 THEN 'Cashless'\n        ELSE 'Reimbursement' END AS 'Claim Type'\n    ,\tC.ClaimCategory AS 'Hospitalization Type'\n    ,\tC.ClassofAccommodation\n    ,\tCPT.CptDescription AS 'Procedure'\n    ,\tIcd.IcdDescription AS 'Diagnosis'\n    ,\tMDT.policyNo\n    ,\tCASE WHEN MDt.employer_id = 0 THEN 'Individual Policy' ELSE 'Group Policy' END AS 'Policy Type'\n    ,\tM.member_code\n    ,\tM.FullMemberName\n    ,\tCASE WHEN M.sex = 'F' THEN 'Female' ELSE 'Male' END AS 'Gender'\n    ,\tDATEDIFF(YEAR,M.date_birth, GETDATE()) AS 'Age'\n    ,\tP.HospitalName AS 'Hospital'\n    --,\tPN.ProviderNetworkType_Desc AS 'Provider Network Type'\n    ,   Emp.EmployerName AS 'Corporate'\n    ,\tDATEDIFF(DAY,C.DateofAdmit, C.DateofDischarge) AS 'Length of Stay'\n    ,\tCASE WHEN A.ClaimFormDetailId IS NULL THEN 0 ELSE 1 END AS 'IsFraudClaim'\n    ,\tA.FraudScore AS 'Fraud Score'\n    ,\tC.AmountNet AS 'Claim Amount'\n    ,\tC.DateofAdmit AS 'Claim Date'\n\n    FROM FactClaimDetails C \n    INNER JOIN LnkClaimProcedureDetails L ON L.ClaimFormDetailId = C.ClaimFormDetailId\n    INNER JOIN DimProcedureCodes Cpt ON Cpt.CptCodeId = L.CptCodeId\n    INNER JOIN LnkClaimDiagnosisCodes Licd ON Licd.ClaimFormDetailId = C.ClaimFormDetailId\n    INNER JOIN DimDiagnosisCodes Icd ON Icd.IcdCodeId = Licd.IcdCodeId \n    INNER JOIN DimMemberDetails MDT ON MDt.member_detail_id = C.MemberDetailId\n    INNER JOIN DimMembers M ON M.member_id = MDT.member_id\n    INNER JOIN DimHospitalDetails P ON P.HospitalId = C.HospitalId\n    --INNER JOIN  Provider_NetworkType PN ON PN.ProviderNetworkType_Id = P.Provider_NetworkType\n    LEFT OUTER JOIN DimEmployers EMP ON Emp.EmployerId = MDT.employer_id\n    LEFT OUTER JOIN\n    (\n        SELECT F.ClaimFormDetailId, SUM(L.FraudScore) AS FraudScore\n        FROM FactClaimDetails F \n        INNER JOIN LnkClaimFraudParameter L ON L.ClaimFormDetailId = F.ClaimFormDetailId\n        GROUP BY\n            F.ClaimFormDetailId\n    ) A ON A.ClaimFormDetailId = C.ClaimFormDetailId\n\n\n\tTRUNCATE TABLE dbo.ClaimsSummary\n\n\tINSERT INTO dbo.ClaimsSummary\n\tSELECT * FROM load.ClaimsSummary\n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Insert claimsummary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\nINSERT INTO dbo.ClaimsSummary\n(\n\t[ClaimFIRNo]\n,\t[ClaimType]\n,\t[HospitalizationType]\n,\t[ClassofAccommodation]\n,\t[Procedure]\n,\t[Diagnosis]\n,\t[PolicyNo]\n,\t[PolicyType]\n,\t[member_code]\n,\t[FullMemberName]\n,\t[Gender]\n,\t[Age]\n,\t[Hospital]\n,\t[Corporate]\n,\t[LengthofStay]\n,\t[IsFraudClaim]\n,\t[FraudScore]\n,\t[ClaimAmount]\n,\t[ClaimDate]\n)\nSELECT \n\tC.ClaimFormDetailId AS 'Claim FIR No'\n,   CASE \n\t\tWHEN C.ClaimType = 0 THEN 'Cashless'\n\tELSE 'Reimbursement' END AS 'Claim Type'\n,\tC.ClaimCategory AS 'Hospitalization Type'\n,\tC.ClassofAccommodation\n,\tCPT.CptDescription AS 'Procedure'\n,\tIcd.IcdDescription AS 'Diagnosis'\n,\tMDT.policyNo\n,\tCASE WHEN MDt.employer_id = 0 THEN 'Individual Policy' ELSE 'Group Policy' END AS 'Policy Type'\n,\tM.member_code\n,\tM.FullMemberName\n,\tCASE WHEN M.sex = 'F' THEN 'Female' ELSE 'Male' END AS 'Gender'\n,\tDATEDIFF(YEAR,M.date_birth, GETDATE()) AS 'Age'\n,\tP.HospitalName AS 'Hospital'\n--,\tPN.ProviderNetworkType_Desc AS 'Provider Network Type'\n,   Emp.EmployerName AS 'Corporate'\n,\tDATEDIFF(DAY,C.DateofAdmit, C.DateofDischarge) AS 'Length of Stay'\n,\tCASE WHEN A.ClaimFormDetailId IS NULL THEN 0 ELSE 1 END AS 'IsFraudClaim'\n,\tA.FraudScore AS 'Fraud Score'\n,\tC.AmountNet AS 'Claim Amount'\n,\tC.DateofAdmit AS 'Claim Date'\n\nFROM FactClaimDetails C \nINNER JOIN LnkClaimProcedureDetails L ON L.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimProcedureCodes Cpt ON Cpt.CptCodeId = L.CptCodeId\nINNER JOIN LnkClaimDiagnosisCodes Licd ON Licd.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimDiagnosisCodes Icd ON Icd.IcdCodeId = Licd.IcdCodeId \nINNER JOIN DimMemberDetails MDT ON MDt.member_detail_id = C.MemberDetailId\nINNER JOIN DimMembers M ON M.member_id = MDT.member_id\nINNER JOIN DimHospitalDetails P ON P.HospitalId = C.HospitalId\n--INNER JOIN  Provider_NetworkType PN ON PN.ProviderNetworkType_Id = P.Provider_NetworkType\nLEFT OUTER JOIN DimEmployers EMP ON Emp.EmployerId = MDT.employer_id\nLEFT OUTER JOIN\n(\n\tSELECT F.ClaimFormDetailId, SUM(L.FraudScore) AS FraudScore\n\tFROM FactClaimDetails F \n\tINNER JOIN LnkClaimFraudParameter L ON L.ClaimFormDetailId = F.ClaimFormDetailId\n\tGROUP BY\n\t\tF.ClaimFormDetailId\n) A ON A.ClaimFormDetailId = C.ClaimFormDetailId",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "SqlPoolTableSynapse",
+						"databaseName": "SqlPoolTableSynapse"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LnkClaimDiagnosisCodes')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[LnkClaimDiagnosisCodes]\n(\n    ClaimDiagnosisId int NOT NULL \n,\tClaimFormDetailId\tINT\n,\tIcdCodeId INT\n)\nWITH\n(\n    DISTRIBUTION = HASH (ClaimDiagnosisId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LnkClaimFraudParameter')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[LnkClaimFraudParameter]\n(\n    LnkCFPId\t\t\t\tINT\t IDENTITY(1,1)\n,\tClaimFormDetailId\t\tINT\n,\tFraudParameterId\t\tVARCHAR(200)\n,\tFraudScore\t\t\t\tINT\n,\tDateCreated\t\t\t\tDATETIME \n)\nWITH\n(\n    DISTRIBUTION = HASH (ClaimFormDetailId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LnkClaimProcedureDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[LnkClaimProcedureDetails]\n(       \n        ClaimProcedureId  INT NOT NULL\n\t,\tClaimFormDetailId INT \n\t,\tCptCodeId INT\n\t,\tBilled Money\n\t,\tNet Money\n\t,\tNoofServices numeric(19,2)\n\t,\tPlaceofServiceId INT\n\t,\tAmount\tMoney\n\t,\tParentServiceProcedureId Money\n\t,\tGrossAmount Money\n\t,\tServiceStartDate DateTime\n\t,\tServiceEndDate DateTime\n\t,\tBilledGross Money\n\t,\tServiceNet Money\n)\nWITH\n(\n    DISTRIBUTION = HASH (ClaimProcedureId),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 10')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 12')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 13')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 14')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 15')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 16')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 8')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 9')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [Load].[ClaimDetails]\n( \n\t[ClaimFIRNo] [varchar](50)  NULL,\n\t[Injury] [varchar](100)  NULL,\n\t[ClaimType] [bit]  NULL,\n\t[ClaimCategory] [varchar](10)  NULL,\n\t[AmountBilled] [money]  NULL,\n\t[AmountNet] [money]  NULL,\n\t[AmountPaid] [money]  NULL,\n\t[DoctorName] [varchar](50)  NULL,\n\t[DoctorCity] [varchar](50)  NULL,\n\t[ClaimFormDetailId] [int]  NULL,\n\t[IntimationId] [int]  NULL,\n\t[HospitalId] [int]  NULL,\n\t[ClaimStatusId] [int]  NULL,\n\t[PlaceofServiceId] [int]  NULL,\n\t[DateofService] [datetime]  NULL,\n\t[DatePaid] [datetime]  NULL,\n\t[DateReceived] [datetime]  NULL,\n\t[DateofAdmit] [datetime]  NULL,\n\t[DateofInjury] [datetime]  NULL,\n\t[DateofDocumentation] [datetime]  NULL,\n\t[DateofDischarge] [datetime]  NULL,\n\t[DateModified] [datetime]  NULL,\n\t[WorkflowSequenceId] [int]  NULL,\n\t[MemberDetailId] [int]  NULL,\n\t[ClassofAccommodation] [varchar](50)  NULL,\n\t[HospitalizationType] [varchar](50)  NULL,\n\t[Corporate] [varchar](100)  NULL,\n\t[ClaimId] [int]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [ClaimId] ),\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UpsertClaimDetails')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [Load].[UpsertClaimDetails] AS\nBEGIN\n\nUPDATE icd SET \n\tclaim.ClaimFIRNo\t=\tclaimstage.ClaimFIRNo\n,\tclaim.Injury\t=\tclaimstage.Injury\n,\tclaim.ClaimType\t=\tclaimstage.ClaimType\n,\tclaim.ClaimCategory\t=\tclaimstage.ClaimCategory\n,\tclaim.AmountBilled\t=\tclaimstage.AmountBilled\n,\tclaim.AmountNet\t=\tclaimstage.AmountNet\n,\tclaim.AmountPaid\t=\tclaimstage.AmountPaid\n,\tclaim.DoctorName\t=\tclaimstage.DoctorName\n,\tclaim.DoctorCity\t=\tclaimstage.DoctorCity\n,\tclaim.ClaimFormDetailId\t=\tclaimstage.ClaimFormDetailId\n,\tclaim.IntimationId\t=\tclaimstage.IntimationId\n,\tclaim.HospitalId\t=\tclaimstage.HospitalId\n,\tclaim.ClaimStatusId\t=\tclaimstage.ClaimStatusId\n,\tclaim.PlaceofServiceId\t=\tclaimstage.PlaceofServiceId\n,\tclaim.DateofService\t=\tclaimstage.DateofService\n,\tclaim.DatePaid\t=\tclaimstage.DatePaid\n,\tclaim.DateReceived\t=\tclaimstage.DateReceived\n,\tclaim.DateofAdmit\t=\tclaimstage.DateofAdmit\n,\tclaim.DateofInjury\t=\tclaimstage.DateofInjury\n,\tclaim.DateofDocumentation\t=\tclaimstage.DateofDocumentation\n,\tclaim.DateofDischarge\t=\tclaimstage.DateofDischarge\n,\tclaim.DateModified\t=\tclaimstage.DateModified\n,\tclaim.WorkflowSequenceId\t=\tclaimstage.WorkflowSequenceId\n,\tclaim.MemberDetailId\t=\tclaimstage.MemberDetailId\n,\tclaim.ClassofAccommodation\t=\tclaimstage.ClassofAccommodation\n,\tclaim.HospitalizationType\t=\tclaimstage.HospitalizationType\n,\tclaim.Corporate\t=\tclaimstage.Corporate \nFROM\ndbo.FactClaimDetails claim\nJOIN\nLoad.ClaimDetails claimstage ON\nclaim.ClaimId = claimstage.ClaimId\n\ninsert into FactClaimDetails (ClaimFIRNo,Injury,ClaimType,ClaimCategory,AmountBilled,AmountNet,AmountPaid,DoctorName,DoctorCity,ClaimFormDetailId,IntimationId,HospitalId,ClaimStatusId,PlaceofServiceId,DateofService,DatePaid,DateReceived,DateofAdmit,DateofInjury,DateofDocumentation,DateofDischarge,DateModified,WorkflowSequenceId,MemberDetailId,\nClassofAccommodation,HospitalizationType,Corporate,ClaimId)\nSELECT \n\tclaimstage.ClaimFIRNo\n,\tclaimstage.Injury\n,\tclaimstage.ClaimType\n,\tclaimstage.ClaimCategory\n,\tclaimstage.AmountBilled\n,\tclaimstage.AmountNet\n,\tclaimstage.AmountPaid\n,\tclaimstage.DoctorName\n,\tclaimstage.DoctorCity\n,\tclaimstage.ClaimFormDetailId\n,\tclaimstage.IntimationId\n,\tclaimstage.HospitalId\n,\tclaimstage.ClaimStatusId\n,\tclaimstage.PlaceofServiceId\n,\tclaimstage.DateofService\n,\tclaimstage.DatePaid\n,\tclaimstage.DateReceived\n,\tclaimstage.DateofAdmit\n,\tclaimstage.DateofInjury\n,\tclaimstage.DateofDocumentation\n,\tclaimstage.DateofDischarge\n,\tclaimstage.DateModified\n,\tclaimstage.WorkflowSequenceId\n,\tclaimstage.MemberDetailId\n,\tclaimstage.ClassofAccommodation\n,\tclaimstage.HospitalizationType\n,\tclaimstage.Corporate\n,\tclaimstage.ClaimId \nFROM\n[Load].ClaimDetails claimstage \nLEFT JOIN \nFactClaimDetails claim ON claimstage.ClaimId = claim.ClaimId\nWHERE claim.ClaimId IS NULL\n\n--update load.Log table\nUPDATE [Load].[Log] SET LastUpdatedDate = GETDATE() WHERE FileType = 'ClaimDetails' \n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UpsertDiagnosisCodes')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nALTER PROC [dbo].[UpsertDiagnosisCodes] AS\nBEGIN\n\nUPDATE icd SET IcdCodeId = icdStage.IcdCodeId,\nIcdCode= icdStage.IcdCode,\nIcdDescription= icdStage.IcdDescription\nFROM\nDimDiagnosisCodes icd\nJOIN\nLoad.DiagnosisCodes icdStage ON\nicd.IcdCodeId = icdStage.IcdCodeId\n\ninsert into DimDiagnosisCodes (IcdCodeId,IcdCode,IcdDescription)\nSELECT icdStage.IcdCodeId, \nicdStage.IcdCode, \nicdStage.IcdDescription\nFROM\nLoad.DiagnosisCodes icdStage \nLEFT JOIN \nDimDiagnosisCodes icd ON icd.IcdCodeId = icdStage.IcdCodeId\nWHERE icd.IcdCodeId IS NULL\n\n\n--Insert the log details into Load.LogDetails table\nDECLARE @logId INT\nSELECT @logId = LogID FROM [Load].[Log] WHERE FileType = 'DiagnosisCodes' \n\nINSERT INTO [Load].[LogDetails] (LogId,CompletedDate)\nselect @logId,  GETDATE()\n\n--update load.Log table\nUPDATE [Load].[Log] SET LastUpdatedDate = GETDATE() WHERE FileType = 'DiagnosisCodes' \n\n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "SqlPoolTableSynapse",
+						"databaseName": "SqlPoolTableSynapse"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UpsertDimProcedureCategories')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\nCreate Procedure dbo.UpsertDimProcedureCategories\nAS\nBEGIN\n\nUpdate \nld\nSET\n  ProcedureCategoryCode= ld.ProcedureCategoryCode\n, ProcedureCategoryDesc= ld.ProcedureCategoryDesc\nFROM\nLoad.ProcedureCategories ld\nINNEr JOIN dbo.DimProcedureCategories dp ON ld.ProcedureCategoryId = dp.ProcedureCategoryId\n\nINSERT INTO dbo.DimProcedureCategories\n(\n\tProcedureCategoryId\n,\tProcedureCategoryCode\n,\tProcedureCategoryDesc\n)\nSELECT\n\tld.ProcedureCategoryId\n,\tld.ProcedureCategoryCode\n,\tld.ProcedureCategoryDesc\nFROM\nLoad.ProcedureCategories ld\nLEFT JOIN dbo.DimProcedureCategories dp ON ld.ProcedureCategoryId = dp.ProcedureCategoryId\nWHERE dp.ProcedureCategoryId IS NULL\n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UpsertLnkClaimDiagnosisCodes')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nalter PROC [dbo].[UpsertLnkClaimDiagnosisCodes] AS\nBEGIN\n\nUPDATE diag SET ClaimDiagnosisId = diagStage.ClaimDiagnosisId,\nClaimFormDetailId= diagStage.ClaimFormDetailId,\nIcdCodeId= diagStage.IcdCodeId\nFROM\nLnkClaimDiagnosisCodes diag\nJOIN\nLoad.LnkClaimDiagnosisCodes diagStage ON\ndiag.ClaimDiagnosisId = diagStage.ClaimDiagnosisId\n\ninsert into dbo.LnkClaimDiagnosisCodes (ClaimDiagnosisId,ClaimFormDetailId,IcdCodeId)\nSELECT diagStage.ClaimDiagnosisId, \ndiagStage.ClaimFormDetailId, \ndiagStage.IcdCodeId\nFROM\nLoad.LnkClaimDiagnosisCodes diagStage \nLEFT JOIN \nLnkClaimDiagnosisCodes diag ON diag.ClaimDiagnosisId = diagStage.ClaimDiagnosisId\nWHERE diag.IcdCodeId IS NULL\n\n--Insert the log details into Load.LogDetails table\nDECLARE @logId INT\nSELECT @logId = LogID FROM [Load].[Log] WHERE FileType = 'ClaimDiagnosisCodes' \n\nINSERT INTO [Load].[LogDetails] (LogId,CompletedDate)\nselect @logId,  GETDATE()\n\n--update load.Log table\nUPDATE [Load].[Log] SET LastUpdatedDate = GETDATE() WHERE FileType = 'ClaimDiagnosisCodes' \n\n\n\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/claim_form_details')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[claim_form_details]\n(\n    [Claim FIR No] [int] NOT NULL,\n\t[Claim Type] [varchar](13) NOT NULL,\n\t[Hospitalization Type] [varchar](10) NULL,\n\t[Class_of_Accommodation] [varchar](50) NULL,\n\t[Procedure] [varchar](500) NULL,\n\t[Diagnosis] [varchar](250) NULL,\n\t[policyNo] [varchar](100) NULL,\n\t[Policy Type] [varchar](17) NOT NULL,\n\t[member_code] [varchar](25) NULL,\n\t[FullMemberName] [varchar](200) NULL,\n\t[Gender] [varchar](6) NOT NULL,\n\t[Age] [int] NULL,\n\t[Hospital] [varchar](100) NULL,\n\t[Provider Network Type] [varchar](100) NULL,\n\t[Corporate] [varchar](100) NULL,\n\t[Length of Stay] [int] NULL,\n\t[IsFraudClaim] [varchar](1) NOT NULL,\n\t[Fraud Score] [int] NOT NULL,\n\t[Claim Amount] [money] NULL,\n\t[Claim Date] [datetime] NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([Claim FIR No]),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/load_log')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP TABLE [Load].[Log]\nCREATE TABLE [Load].[Log](\n\t[LogId] [int] IDENTITY(1,1) NOT NULL,\n\t[FileType] [varchar](255) NULL,\n\t[Jobname] [varchar](255) NULL,  \n\t[LastUpdatedDate] [datetime] NULL \n)\n\nWITH\n(\n    DISTRIBUTION = HASH (FileType),\n    CLUSTERED COLUMNSTORE INDEX\n)\n\n-- Add primary key constraint\nALTER TABLE Load.Log add CONSTRAINT PK_Log PRIMARY KEY NONCLUSTERED (LogId) NOT ENFORCED\n\n--DROP TABLE [Load].[LogDetails]\nCREATE TABLE [Load].[LogDetails](\n\t[Log_Detail_id] [int] IDENTITY(1,1) NOT NULL,\n\t[LogId] INT, \n\t[CompletedDate] [datetime] NULL\n    )\n\nWITH\n(\n    DISTRIBUTION = HASH (LogId),\n    CLUSTERED COLUMNSTORE INDEX\n)\n\nALTER TABLE [Load].[LogDetails] add CONSTRAINT PK_LogDetails PRIMARY KEY NONCLUSTERED (Log_Detail_id) NOT ENFORCED\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "SqlPoolTableSynapse",
+						"databaseName": "SqlPoolTableSynapse"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/spExecuteDetectFraud')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nALTER PROC [dbo].[spExecuteDetectFraud] AS\nBEGIN\n\nTRUNCATE TABLE [Report].ClaimsFraudSummaryData\n\nINSERT INTO [Report].ClaimsFraudSummaryData\nSELECT \n      [ClaimFIRNo]\n      ,[ClaimType]\n      ,[HospitalizationType]\n      ,[ClassofAccommodation]\n      ,[Procedure]\n      ,[Diagnosis]\n      ,[policyNo]\n      ,[PolicyType]\n      ,[member_code]\n      ,[FullMemberName]\n      ,[Gender]\n      ,[Age]\n      ,[Hospital]\n      ,[Corporate]\n      ,[LengthofStay]\n      ,[output_label1] IsFraudClaim\n      ,[FraudScore]\n      ,[ClaimAmount]\n      ,[ClaimDate] \nFROM PREDICT (MODEL = (SELECT [model] FROM dbo.[ClaimsMLModelExt] WHERE [ID] = 'sampesynapseworkspace-claimsfraudmldata-20210507054541-Best:1'),\n              DATA = [dbo].[ClaimsSummary],\n              RUNTIME = ONNX) WITH ([output_label1] [varchar])\n\nEND\n\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "ClaimsSummaryDSQL",
+						"databaseName": "ClaimsSummaryDSQL"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/update claimsummary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "UPDATE ClaimsSummary\nSET \n    IsFraudClaim = 0\n,    [FraudScore] = 0\n\n \n\nUPDATE CS\nSET CS.IsFraudClaim = 1\n,    CS.[FraudScore] = 10\nFROM ClaimsSummary CS\nINNER JOIN FactClaimDetails C ON C.ClaimFormDetailId = CS.ClaimFIRNo\nINNER JOIN LnkClaimDiagnosisCodes L ON L.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimMemberDetails MDT ON MDT.member_detail_id = C.MemberDetailId\nINNER JOIN DimMembers M ON M.member_id = MDT.member_id\nWHERE\n    L.IcdCodeId IN \n    (\nSELECT C.IcdCodeId\nFROM DimDiagnosisCodes c \nWHERE \n    C.IcdDescription LIKE '%delivery%' AND\n    M.sex <> 'F')\n    \n\n \n\nUPDATE CS\nSET CS.IsFraudClaim = 1\n,    CS.[FraudScore] = 10\n\n \n\nFROM ClaimsSummary CS\nINNER JOIN FactClaimDetails C ON C.ClaimFormDetailId = CS.ClaimFIRNo\nINNER JOIN LnkClaimDiagnosisCodes L ON L.ClaimFormDetailId = C.ClaimFormDetailId\nINNER JOIN DimMemberDetails MDT ON MDT.member_detail_id = C.MemberDetailId\nINNER JOIN DimMembers M ON M.member_id = MDT.member_id\nWHERE\n    L.IcdCodeId IN \n    (\nSELECT C.IcdCodeId \nFROM DimDiagnosisCodes c \nWHERE \n    C.IcdDescription LIKE '%Heart%' AND\n    Datediff(Year,M.date_birth,GETDATE())  <= 10)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "SqlPoolTableSynapse",
+						"databaseName": "SqlPoolTableSynapse"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsFraudDetectionModel')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "sparkpool2021",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"synapse_widget": {
+						"version": "0.1"
+					},
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/06a2d317-3061-45f6-89b4-4ef3424d6693/resourceGroups/az-synapse-hack-rg/providers/Microsoft.Synapse/workspaces/az-synapse-hack-ws/bigDataPools/sparkpool2021",
+						"name": "sparkpool2021",
+						"type": "Spark",
+						"endpoint": "https://az-synapse-hack-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2021",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 10,
+						"cores": 8,
+						"memory": 56
+					}
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"import azureml.core\n",
+							"\n",
+							"from azureml.core import Experiment, Workspace, Dataset, Datastore\n",
+							"from azureml.train.automl import AutoMLConfig\n",
+							"from azureml.data.dataset_factory import TabularDatasetFactory"
+						],
+						"outputs": [],
+						"execution_count": 29
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "scala"
+							},
+							"collapsed": true
+						},
+						"source": [
+							"%%spark\r\n",
+							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\r\n",
+							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \r\n",
+							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
+						],
+						"outputs": [],
+						"execution_count": 30
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": true
+						},
+						"source": [
+							"import azureml.core\r\n",
+							"print(azureml.core.VERSION)\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 31
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"subscription_id = \"06a2d317-3061-45f6-89b4-4ef3424d6693\"\n",
+							"resource_group = \"az-synapse-hack-rg\"\n",
+							"workspace_name = \"az-synapse-hack-mlworkspace\"\n",
+							"experiment_name = \"az-synapse-hack-ws-claimssummary-exp1\"\n",
+							"\n",
+							"ws = Workspace(subscription_id = subscription_id, resource_group = resource_group, workspace_name = workspace_name)\n",
+							"experiment = Experiment(ws, experiment_name)"
+						],
+						"outputs": [],
+						"execution_count": 32
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"df = spark.sql(\"SELECT ClaimType, HospitalizationType,ClassofAccommodation, Procedure, Diagnosis , PolicyType , Gender , Age , Hospital , Corporate , LengthofStay , IsFraudClaim , ClaimAmount , ClaimDate FROM claimfraudanalysis.claimssummary\")\n",
+							"\n",
+							"datastore = Datastore.get_default(ws)\n",
+							"dataset = TabularDatasetFactory.register_spark_dataframe(df, datastore, name = experiment_name + \"-dataset\")"
+						],
+						"outputs": [],
+						"execution_count": 33
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"automl_config = AutoMLConfig(spark_context = sc,\n",
+							"                             task = \"classification\",\n",
+							"                             training_data = dataset,\n",
+							"                             label_column_name = \"IsFraudClaim\",\n",
+							"                             primary_metric = \"AUC_weighted\",\n",
+							"                             experiment_timeout_minutes = 15,\n",
+							"                             blocked_models=['XGBoostClassifier'],\n",
+							"                             max_concurrent_iterations = 2,\n",
+							"                             enable_onnx_compatible_models = True)"
+						],
+						"outputs": [],
+						"execution_count": 34
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"run = experiment.submit(automl_config)"
+						],
+						"outputs": [],
+						"execution_count": 35
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"displayHTML(\"<a href={} target='_blank'>Your experiment in Azure Machine Learning portal: {}</a>\".format(run.get_portal_url(), run.id))"
+						],
+						"outputs": [],
+						"execution_count": 36
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"run.wait_for_completion()\n",
+							"\n",
+							"import onnxruntime\n",
+							"import mlflow\n",
+							"import mlflow.onnx\n",
+							"\n",
+							"from mlflow.models.signature import ModelSignature\n",
+							"from mlflow.types import DataType\n",
+							"from mlflow.types.schema import ColSpec, Schema\n",
+							"\n",
+							"# Get best model from automl run\n",
+							"best_run, onnx_model = run.get_output(return_onnx_model=True)\n",
+							"\n",
+							"# Define utility functions to infer the schema of ONNX model\n",
+							"def _infer_schema(data):\n",
+							"    res = []\n",
+							"    for _, col in enumerate(data):\n",
+							"        t = col.type.replace(\"tensor(\", \"\").replace(\")\", \"\")\n",
+							"        if t in [\"bool\"]:\n",
+							"            dt = DataType.boolean\n",
+							"        elif t in [\"int8\", \"uint8\", \"int16\", \"uint16\", \"int32\"]:\n",
+							"            dt = DateType.integer\n",
+							"        elif t in [\"uint32\", \"int64\"]:\n",
+							"            dt = DataType.long\n",
+							"        elif t in [\"float16\", \"bfloat16\", \"float\"]:\n",
+							"            dt = DataType.float\n",
+							"        elif t in [\"double\"]:\n",
+							"            dt = DataType.double\n",
+							"        elif t in [\"string\"]:\n",
+							"            dt = DataType.string\n",
+							"        else:\n",
+							"            raise Exception(\"Unsupported type: \" + t)\n",
+							"        res.append(ColSpec(type=dt, name=col.name))\n",
+							"    return Schema(res)\n",
+							"\n",
+							"def _infer_signature(onnx_model):\n",
+							"    onnx_model_bytes = onnx_model.SerializeToString()\n",
+							"    onnx_runtime = onnxruntime.InferenceSession(onnx_model_bytes)\n",
+							"    inputs = _infer_schema(onnx_runtime.get_inputs())\n",
+							"    outputs = _infer_schema(onnx_runtime.get_outputs())\n",
+							"    return ModelSignature(inputs, outputs)\n",
+							"\n",
+							"# Infer signature of ONNX model\n",
+							"signature = _infer_signature(onnx_model)\n",
+							"\n",
+							"artifact_path = experiment_name + \"_artifact\"\n",
+							"mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())\n",
+							"mlflow.set_experiment(experiment_name)\n",
+							"\n",
+							"with mlflow.start_run() as run:\n",
+							"    # Save the model to the outputs directory for capture\n",
+							"    mlflow.onnx.log_model(onnx_model, artifact_path, signature=signature)\n",
+							"\n",
+							"    # Register the model to AML model registry\n",
+							"    mlflow.register_model(\"runs:/\" + run.info.run_id + \"/\" + artifact_path, \"az-synapse-hack-ws-claimssummary-20210511090849-XGBoostClassifer\")"
+						],
+						"outputs": [],
+						"execution_count": 37
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LoadClaimsSummaryToSpark')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "sparkpool2021",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"synapse_widget": {
+						"version": "0.1"
+					},
+					"kernelspec": {
+						"name": "synapse_spark",
+						"display_name": "Synapse Spark"
+					},
+					"language_info": {
+						"name": "scala"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/06a2d317-3061-45f6-89b4-4ef3424d6693/resourceGroups/az-synapse-hack-rg/providers/Microsoft.Synapse/workspaces/az-synapse-hack-ws/bigDataPools/sparkpool2021",
+						"name": "sparkpool2021",
+						"type": "Spark",
+						"endpoint": "https://az-synapse-hack-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2021",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 10,
+						"cores": 8,
+						"memory": 56
+					}
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "scala"
+							}
+						},
+						"source": [
+							"%%spark\n",
+							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\n",
+							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \n",
+							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimsSummaryDSQL')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"restorePointInTime": "0001-01-01T00:00:00",
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "centralindia"
+		}
+	]
+}
