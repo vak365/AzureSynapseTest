@@ -45,7 +45,10 @@
 				"inputs": [
 					{
 						"referenceName": "dsExternalParquetfile",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"Folderpath": "Input"
+						}
 					}
 				],
 				"outputs": [
@@ -863,7 +866,7 @@
 					"sink": {
 						"type": "ParquetSink",
 						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings"
+							"type": "FileServerWriteSettings"
 						},
 						"formatSettings": {
 							"type": "ParquetWriteSettings"
@@ -887,13 +890,10 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ArchiveParquetFile",
+						"referenceName": "dsExternalParquetfile",
 						"type": "DatasetReference",
 						"parameters": {
-							"FileName": {
-								"value": "@concat('ExternalTPA_',utcnow(),'_.parquet')",
-								"type": "Expression"
-							}
+							"Folderpath": "Archive"
 						}
 					}
 				]

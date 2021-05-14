@@ -5,12 +5,21 @@
 			"referenceName": "OnPremFileLocation",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Folderpath": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "FileServerLocation",
-				"fileName": "ExternalTPA.parquet"
+				"fileName": "ExternalTPA.parquet",
+				"folderPath": {
+					"value": "@dataset().Folderpath",
+					"type": "Expression"
+				}
 			},
 			"compressionCodec": "snappy"
 		},
