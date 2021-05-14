@@ -1665,44 +1665,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/claim_form_details')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServerSynapse",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "Log_Detail_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "LogId",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "CompletedDate",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "Load",
-					"table": "LogDetails"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/SqlServerSynapse')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/dsExternalParquetfile')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -3449,47 +3411,6 @@
 			},
 			"dependsOn": [],
 			"location": "centralindia"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/sinkModeltable')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServerSynapse",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "LogId",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "FileType",
-						"type": "varchar"
-					},
-					{
-						"name": "Jobname",
-						"type": "varchar"
-					},
-					{
-						"name": "LastUpdatedDate",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "Load",
-					"table": "Log"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/SqlServerSynapse')]"
-			]
 		}
 	]
 }
