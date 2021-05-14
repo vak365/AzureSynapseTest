@@ -1197,7 +1197,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "InsFactClaimDeatilsExtrasnalTPA",
+								"activity": "InsFactClaimDetailsExternalTPA",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1290,7 +1290,7 @@
 						}
 					},
 					{
-						"name": "InsFactClaimDeatilsExtrasnalTPA",
+						"name": "InsFactClaimDetailsExternalTPA",
 						"type": "SqlPoolStoredProcedure",
 						"dependsOn": [
 							{
@@ -1313,7 +1313,7 @@
 							"type": "SqlPoolReference"
 						},
 						"typeProperties": {
-							"storedProcedureName": "[dbo].[InsFactClaimDeatilsExtrasnalTPA]"
+							"storedProcedureName": "[dbo].[InsFactClaimDetailsExternalTPA]"
 						}
 					}
 				],
