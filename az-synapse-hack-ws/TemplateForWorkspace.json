@@ -1416,44 +1416,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/claim_form_details')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServerSynapse",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "Log_Detail_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "LogId",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "CompletedDate",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "Load",
-					"table": "LogDetails"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/SqlServerSynapse')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/dsExternalParquetfile')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -2053,6 +2015,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/20_DimRelationship')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[DimRelationship](\n\t[RelationshipID] [int] IDENTITY(1,1) NOT NULL,\n\t[RelationshipCode] [varchar](50) NULL,\n\t[Description] [varchar](100) NULL,\n\t[Gender] [varchar](10) NULL,\n\t[Sequence] [int] NULL\n)\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/2_AzureStorageAccountKey')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -2493,6 +2475,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/InsertDimRelationship')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SET IDENTITY_INSERT dbo.DimRelationship ON;\n\nINSERT [dbo].[DimRelationship] ([RelationshipID], [RelationshipCode], [Description], [Gender], [Sequence]) \nSELECT 1, N'1', N'Father', N'M', 2 UNION ALL\n SELECT 2, N'2', N'Mother', N'F', 2 UNION ALL\n SELECT 3, N'3', N'Husband', N'M', 3 UNION ALL\n SELECT 4, N'4', N'Spouse', N'OPP', 3 UNION ALL\n SELECT 5, N'5', N'Brother', N'M', 4 UNION ALL\n SELECT 6, N'6', N'Sister', N'F', 4 UNION ALL\n SELECT 7, N'7', N'Child', NULL, 6 UNION ALL\n SELECT 8, N'8', N'SELF', NULL, 3 UNION ALL\n SELECT 9, N'9', N'Son', N'M', 5 UNION ALL\n SELECT 10, N'10', N'Wife', N'F', 3 UNION ALL\n SELECT 11, N'11', N'Daughter', N'F', 5 UNION ALL\n SELECT 12, N'12', N'First Child', NULL, 6 UNION ALL\n SELECT 13, N'13', N'Second Child', NULL, 7 UNION ALL\n SELECT 14, N'14', N'Son-in-law', N'M', 5 UNION ALL\n SELECT 15, N'15', N'Others', NULL, NULL UNION ALL\n SELECT 16, N'16', N'Uncle', N'M', 2 UNION ALL\n SELECT 17, N'17', N'Aunty', N'F', 2 UNION ALL\n SELECT 18, N'18', N'Father In Law', N'M', 2 UNION ALL\n SELECT 19, N'19', N'Mother In Law', N'F', NULL UNION ALL\n SELECT 20, N'20', N'Grand Mother', N'F', 1 UNION ALL\n SELECT 22, N'22', N'Male', N'M', NULL UNION ALL\n SELECT 23, N'23', N'Female', N'F', NULL UNION ALL\n SELECT 24, N'24', N'Relative', NULL, NULL UNION ALL\n SELECT 25, N'25', N'Parent', NULL, NULL ",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/LnkClaimDiagnosisCodes')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -2738,11 +2740,12 @@
 				"metadata": {
 					"saveOutput": true,
 					"synapse_widget": {
-						"version": "0.1"
+						"version": "0.1",
+						"state": {}
 					},
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
+						"display_name": "python"
 					},
 					"language_info": {
 						"name": "python"
@@ -2759,12 +2762,15 @@
 						"sparkVersion": "2.4",
 						"nodeCount": 10,
 						"cores": 8,
-						"memory": 56
-					}
+						"memory": 56,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"import azureml.core\n",
 							"\n",
@@ -2795,7 +2801,7 @@
 						"source": [
 							"%%spark\r\n",
 							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\r\n",
-							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \r\n",
+							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.dbo.ClaimsSummary\") \r\n",
 							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 						],
 						"outputs": [],
@@ -2825,6 +2831,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"subscription_id = \"06a2d317-3061-45f6-89b4-4ef3424d6693\"\n",
 							"resource_group = \"az-synapse-hack-rg\"\n",
@@ -2839,6 +2846,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"df = spark.sql(\"SELECT ClaimType, HospitalizationType,ClassofAccommodation, Procedure, Diagnosis , PolicyType , Gender , Age , Hospital , Corporate , LengthofStay , IsFraudClaim , ClaimAmount , ClaimDate FROM claimfraudanalysis.claimssummary\")\n",
 							"\n",
@@ -2850,6 +2858,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"automl_config = AutoMLConfig(spark_context = sc,\n",
 							"                             task = \"classification\",\n",
@@ -2866,6 +2875,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"run = experiment.submit(automl_config)"
 						],
@@ -2874,6 +2884,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"displayHTML(\"<a href={} target='_blank'>Your experiment in Azure Machine Learning portal: {}</a>\".format(run.get_portal_url(), run.id))"
 						],
@@ -2882,6 +2893,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"run.wait_for_completion()\n",
 							"\n",
@@ -2958,6 +2970,39 @@
 			},
 			"dependsOn": [],
 			"location": "centralindia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ClaimFraudDetectionModel_Train')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "ClaimsFraudDetectionModel",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ClaimsFraudDetectionModel",
+								"type": "NotebookReference"
+							},
+							"snapshot": true
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/notebooks/ClaimsFraudDetectionModel')]"
+			]
 		}
 	]
 }
