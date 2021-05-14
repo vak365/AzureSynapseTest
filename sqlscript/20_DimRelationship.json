@@ -1,0 +1,17 @@
+{
+	"name": "20_DimRelationship",
+	"properties": {
+		"content": {
+			"query": "CREATE TABLE [dbo].[DimRelationship](\n\t[RelationshipID] [int] IDENTITY(1,1) NOT NULL,\n\t[RelationshipCode] [varchar](50) NULL,\n\t[Description] [varchar](100) NULL,\n\t[Gender] [varchar](10) NULL,\n\t[Sequence] [int] NULL\n)\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
