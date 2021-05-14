@@ -840,7 +840,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Load to ExternalTPAData",
+						"activity": "InsFactClaimDeatilsExtrasnalTPA",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -928,6 +928,33 @@
 						"recursive": true,
 						"enablePartitionDiscovery": false
 					}
+				}
+			},
+			{
+				"name": "InsFactClaimDeatilsExtrasnalTPA",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load to ExternalTPAData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "ClaimsSummaryDSQL",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[InsFactClaimDeatilsExtrasnalTPA]"
 				}
 			}
 		],
