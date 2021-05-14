@@ -1,0 +1,36 @@
+{
+	"name": "sinkModeltable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServerSynapse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "LogId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FileType",
+				"type": "varchar"
+			},
+			{
+				"name": "Jobname",
+				"type": "varchar"
+			},
+			{
+				"name": "LastUpdatedDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "Load",
+			"table": "Log"
+		}
+	}
+}
