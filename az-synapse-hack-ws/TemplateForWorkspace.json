@@ -400,7 +400,9 @@
 							{
 								"referenceName": "dsExternalParquetfile",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"Folderpath": "Input"
+								}
 							}
 						],
 						"outputs": [
@@ -1221,7 +1223,7 @@
 							"sink": {
 								"type": "ParquetSink",
 								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
+									"type": "FileServerWriteSettings"
 								},
 								"formatSettings": {
 									"type": "ParquetWriteSettings"
@@ -1246,13 +1248,10 @@
 						],
 						"outputs": [
 							{
-								"referenceName": "ArchiveParquetFile",
+								"referenceName": "dsExternalParquetfile",
 								"type": "DatasetReference",
 								"parameters": {
-									"FileName": {
-										"value": "@concat('ExternalTPA_',utcnow(),'_.parquet')",
-										"type": "Expression"
-									}
+									"Folderpath": "Archive"
 								}
 							}
 						]
@@ -1297,283 +1296,7 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/dsExternalParquetfile')]",
 				"[concat(variables('workspaceId'), '/datasets/dsParquetstoragelocation')]",
-				"[concat(variables('workspaceId'), '/datasets/dsExternalTPAsink')]",
-				"[concat(variables('workspaceId'), '/datasets/ArchiveParquetFile')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/ArchiveParquetFile')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "az-synapse-hack-ws-WorkspaceDefaultStorage",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"FileName": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().FileName",
-							"type": "Expression"
-						},
-						"folderPath": "Archive",
-						"fileSystem": "azsynapsehackdlfs"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": [
-					{
-						"name": "TPA_name",
-						"type": "UTF8"
-					},
-					{
-						"name": "TPA_code",
-						"type": "INT64"
-					},
-					{
-						"name": "BILL_NO",
-						"type": "UTF8"
-					},
-					{
-						"name": "Modified Claim FIR No",
-						"type": "UTF8"
-					},
-					{
-						"name": "SBU_Code",
-						"type": "INT64"
-					},
-					{
-						"name": "Group name",
-						"type": "UTF8"
-					},
-					{
-						"name": "POLICY_NO",
-						"type": "INT64"
-					},
-					{
-						"name": "Product Type",
-						"type": "UTF8"
-					},
-					{
-						"name": "Client_code",
-						"type": "INT64"
-					},
-					{
-						"name": "Policy_start_ date",
-						"type": "DATE"
-					},
-					{
-						"name": "Policy_end_date",
-						"type": "DATE"
-					},
-					{
-						"name": "Claim_type",
-						"type": "UTF8"
-					},
-					{
-						"name": "INSURED_NAME",
-						"type": "UTF8"
-					},
-					{
-						"name": "Employee_name",
-						"type": "UTF8"
-					},
-					{
-						"name": "Employee_No",
-						"type": "UTF8"
-					},
-					{
-						"name": "Member_ID",
-						"type": "UTF8"
-					},
-					{
-						"name": "Age",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Consolidated Relation",
-						"type": "UTF8"
-					},
-					{
-						"name": "Provider name",
-						"type": "UTF8"
-					},
-					{
-						"name": "Provider code",
-						"type": "UTF8"
-					},
-					{
-						"name": "Payee address",
-						"type": "UTF8"
-					},
-					{
-						"name": "Payee City",
-						"type": "UTF8"
-					},
-					{
-						"name": "Payee State",
-						"type": "UTF8"
-					},
-					{
-						"name": "Date of last document received",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "LOSS_DATE",
-						"type": "DATE"
-					},
-					{
-						"name": "Date Of Discharge",
-						"type": "DATE"
-					},
-					{
-						"name": "Disease Description",
-						"type": "UTF8"
-					},
-					{
-						"name": "Procedure Description",
-						"type": "UTF8"
-					},
-					{
-						"name": "Claimed Amount",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "NAME_PRINT_ON_CHECK",
-						"type": "UTF8"
-					},
-					{
-						"name": "PAYMENT_MODE",
-						"type": "UTF8"
-					},
-					{
-						"name": "PAYEE_ACCT",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "PAYEE_BANK_IFSC_CODE",
-						"type": "UTF8"
-					},
-					{
-						"name": "Delivery_to",
-						"type": "UTF8"
-					},
-					{
-						"name": "Payable location",
-						"type": "UTF8"
-					},
-					{
-						"name": "LINE_AMOUNT",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Claim_amount_type",
-						"type": "INT64"
-					},
-					{
-						"name": "Service_tax applicable",
-						"type": "UTF8"
-					},
-					{
-						"name": "TDS applicable",
-						"type": "UTF8"
-					},
-					{
-						"name": "TDS %",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "PAN NO",
-						"type": "UTF8"
-					},
-					{
-						"name": "Service_tax amount",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Service_tax Registration no",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Serive_tax invoice No",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Service_tax_invoice_date",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Payee Mail ID",
-						"type": "UTF8"
-					},
-					{
-						"name": "Payee Mobile No",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Claim status",
-						"type": "UTF8"
-					},
-					{
-						"name": "Status Code",
-						"type": "INT64"
-					},
-					{
-						"name": "Claim Number",
-						"type": "INT64"
-					},
-					{
-						"name": "Oracle Invoice number",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Error Description",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Date Created",
-						"type": "DATE"
-					},
-					{
-						"name": "Date Modified",
-						"type": "DATE"
-					},
-					{
-						"name": "Customer Payment Reference Number",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Transferred Date",
-						"type": "DATE"
-					},
-					{
-						"name": "Oracle TDS Amount",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Transferred Amount",
-						"type": "DOUBLE"
-					},
-					{
-						"name": "Created By",
-						"type": "UTF8"
-					},
-					{
-						"name": "Modified By",
-						"type": "UTF8"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/az-synapse-hack-ws-WorkspaceDefaultStorage')]"
+				"[concat(variables('workspaceId'), '/datasets/dsExternalTPAsink')]"
 			]
 		},
 		{
@@ -1673,12 +1396,21 @@
 					"referenceName": "OnPremFileLocation",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"Folderpath": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "Parquet",
 				"typeProperties": {
 					"location": {
 						"type": "FileServerLocation",
-						"fileName": "ExternalTPA.parquet"
+						"fileName": "ExternalTPA.parquet",
+						"folderPath": {
+							"value": "@dataset().Folderpath",
+							"type": "Expression"
+						}
 					},
 					"compressionCodec": "snappy"
 				},
@@ -2093,26 +1825,6 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/ClaimLoadTrigger')]",
-			"type": "Microsoft.Synapse/workspaces/triggers",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2021-05-13T01:00:00Z",
-						"timeZone": "UTC"
-					}
-				}
-			},
-			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
@@ -2964,7 +2676,7 @@
 					},
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
+						"display_name": "python"
 					},
 					"language_info": {
 						"name": "python"
@@ -3017,7 +2729,7 @@
 						"source": [
 							"%%spark\r\n",
 							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\r\n",
-							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \r\n",
+							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.dbo.ClaimsSummary\") \r\n",
 							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 						],
 						"outputs": [],
@@ -3251,6 +2963,77 @@
 			},
 			"dependsOn": [],
 			"location": "centralindia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Trigger 1')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "ClaimsDataLoad",
+						"type": "PipelineReference"
+					},
+					"parameters": {}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Minute",
+					"interval": 5,
+					"startTime": "2021-05-14T16:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/ClaimsDataLoad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Trigger 2')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "ClaimsFraudPredictionLoad",
+						"type": "PipelineReference"
+					},
+					"parameters": {}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Minute",
+					"interval": 15,
+					"startTime": "2021-05-14T16:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": [
+						{
+							"type": "TumblingWindowTriggerDependencyReference",
+							"referenceTrigger": {
+								"referenceName": "Trigger 1",
+								"type": "TriggerReference"
+							}
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/ClaimsFraudPredictionLoad')]",
+				"[concat(variables('workspaceId'), '/triggers/Trigger 1')]"
+			]
 		}
 	]
 }
