@@ -37,7 +37,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/ClaimFraudDetectionModel_Train')]",
+			"name": "[concat(parameters('workspaceName'), '/ClaimFraudDetectionAMLModel')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -1197,7 +1197,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "Load to ExternalTPAData",
+								"activity": "InsFactClaimDeatilsExtrasnalTPA",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1288,6 +1288,33 @@
 								"enablePartitionDiscovery": false
 							}
 						}
+					},
+					{
+						"name": "InsFactClaimDeatilsExtrasnalTPA",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Load to ExternalTPAData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "ClaimsSummaryDSQL",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[dbo].[InsFactClaimDeatilsExtrasnalTPA]"
+						}
 					}
 				],
 				"annotations": [],
@@ -1296,7 +1323,8 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/dsExternalParquetfile')]",
 				"[concat(variables('workspaceId'), '/datasets/dsParquetstoragelocation')]",
-				"[concat(variables('workspaceId'), '/datasets/dsExternalTPAsink')]"
+				"[concat(variables('workspaceId'), '/datasets/dsExternalTPAsink')]",
+				"[concat(variables('workspaceId'), '/sqlPools/ClaimsSummaryDSQL')]"
 			]
 		},
 		{
@@ -1351,6 +1379,44 @@
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/DynamicStoredProceFromDatabase')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServerSynapse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "Log_Detail_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LogId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompletedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "Load",
+					"table": "LogDetails"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/SqlServerSynapse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/claim_form_details')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -2676,7 +2742,7 @@
 					},
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "python"
+						"display_name": "Synapse PySpark"
 					},
 					"language_info": {
 						"name": "python"
@@ -2729,7 +2795,7 @@
 						"source": [
 							"%%spark\r\n",
 							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\r\n",
-							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.dbo.ClaimsSummary\") \r\n",
+							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \r\n",
 							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
 						],
 						"outputs": [],
@@ -2881,77 +2947,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/LoadClaimsSummaryToSpark')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "sparkpool2021",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"synapse_widget": {
-						"version": "0.1"
-					},
-					"kernelspec": {
-						"name": "synapse_spark",
-						"display_name": "Synapse Spark"
-					},
-					"language_info": {
-						"name": "scala"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/06a2d317-3061-45f6-89b4-4ef3424d6693/resourceGroups/az-synapse-hack-rg/providers/Microsoft.Synapse/workspaces/az-synapse-hack-ws/bigDataPools/sparkpool2021",
-						"name": "sparkpool2021",
-						"type": "Spark",
-						"endpoint": "https://az-synapse-hack-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2021",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "2.4",
-						"nodeCount": 10,
-						"cores": 8,
-						"memory": 56
-					}
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"metadata": {
-							"microsoft": {
-								"language": "scala"
-							}
-						},
-						"source": [
-							"%%spark\n",
-							"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\n",
-							"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \n",
-							"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
-						],
-						"outputs": [],
-						"execution_count": null
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/ClaimsSummaryDSQL')]",
 			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
@@ -2963,77 +2958,6 @@
 			},
 			"dependsOn": [],
 			"location": "centralindia"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Trigger 1')]",
-			"type": "Microsoft.Synapse/workspaces/triggers",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "ClaimsDataLoad",
-						"type": "PipelineReference"
-					},
-					"parameters": {}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Minute",
-					"interval": 5,
-					"startTime": "2021-05-14T16:00:00Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/ClaimsDataLoad')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Trigger 2')]",
-			"type": "Microsoft.Synapse/workspaces/triggers",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "ClaimsFraudPredictionLoad",
-						"type": "PipelineReference"
-					},
-					"parameters": {}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Minute",
-					"interval": 15,
-					"startTime": "2021-05-14T16:00:00Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": [
-						{
-							"type": "TumblingWindowTriggerDependencyReference",
-							"referenceTrigger": {
-								"referenceName": "Trigger 1",
-								"type": "TriggerReference"
-							}
-						}
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/ClaimsFraudPredictionLoad')]",
-				"[concat(variables('workspaceId'), '/triggers/Trigger 1')]"
-			]
 		}
 	]
 }
