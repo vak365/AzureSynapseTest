@@ -5,14 +5,20 @@
 		"workspaceName": {
 			"value": "az-synapse-hack-ws"
 		},
-		"OnPremFileLocation_password": {
+		"az-synapse-hack-ws-WorkspaceDefaultSqlServer_connectionString": {
 			"value": ""
 		},
 		"SqlServerSynapse_connectionString": {
 			"value": ""
 		},
-		"az-synapse-hack-ws-WorkspaceDefaultSqlServer_connectionString": {
+		"OnPremFileLocation_password": {
 			"value": ""
+		},
+		"AzureMLLinkService_servicePrincipalKey": {
+			"value": ""
+		},
+		"az-synapse-hack-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://azsynapsehackdl.dfs.core.windows.net"
 		},
 		"OnPremFileLocation_properties_typeProperties_host": {
 			"value": " F:\\AzureSynapseHackathon\\ExternalTPA"
@@ -20,8 +26,17 @@
 		"OnPremFileLocation_properties_typeProperties_userId": {
 			"value": "ubtiinc\\ashwanthaj"
 		},
-		"az-synapse-hack-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
-			"value": "https://azsynapsehackdl.dfs.core.windows.net"
+		"AzureMLLinkService_properties_typeProperties_subscriptionId": {
+			"value": "06a2d317-3061-45f6-89b4-4ef3424d6693"
+		},
+		"AzureMLLinkService_properties_typeProperties_resourceGroupName": {
+			"value": "az-synapse-hack-rg"
+		},
+		"AzureMLLinkService_properties_typeProperties_servicePrincipalId": {
+			"value": "be007549-1565-4877-90e8-f0cfd78d4d55"
+		},
+		"AzureMLLinkService_properties_typeProperties_tenant": {
+			"value": "fda2467e-a26d-4573-aabf-26418967452d"
 		}
 	}
 }
