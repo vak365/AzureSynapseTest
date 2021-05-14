@@ -58,11 +58,9 @@
 				},
 				"source": [
 					"%%spark\n",
-					"spark.sql(\"CREATE DATABASE IF NOT EXISTS ClaimFraudAnalysis\")\n",
-					"val df = spark.read.sqlanalytics(\"ClaimsSummaryDSQL.stage.ClaimsSummary\") \n",
-					"df.write.mode(\"overwrite\").saveAsTable(\"ClaimFraudAnalysis.ClaimsSummary\")"
+					"spark.sql(\"DROP DATABASE default\")"
 				],
-				"execution_count": null
+				"execution_count": 3
 			}
 		]
 	}
